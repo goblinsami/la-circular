@@ -1,4 +1,6 @@
 import { JWT } from 'google-auth-library'
+import type { SiteContent } from '../../types/content'
+import { prepareContentUpdate } from './content-update'
 import type { ProductSheet } from './product-normalization'
 
 interface SheetsConfig {
@@ -21,17 +23,24 @@ interface SheetsValues {
   valueRanges?: Array<{ values?: unknown[][] }>
 }
 
-function createSheetsClient(config: SheetsConfig): JWT {
+function createSheetsClient(config: SheetsConfig, writable = false): JWT {
   return new JWT({
     email: config.googleServiceAccountEmail,
     key: config.googlePrivateKey.replace(/\\n/g, '\n'),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    scopes: [
+      writable
+        ? 'https://www.googleapis.com/auth/spreadsheets'
+        : 'https://www.googleapis.com/auth/spreadsheets.readonly',
+    ],
     transporterOptions: { timeout: 10000, retry: false },
   })
 }
 
 function spreadsheetUrl(config: SheetsConfig): string {
-  return 'https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(config.googleSheetId)
+  return (
+    'https://sheets.googleapis.com/v4/spreadsheets/' +
+    encodeURIComponent(config.googleSheetId)
+  )
 }
 
 export async function readProductSheets(
@@ -81,7 +90,9 @@ export async function readProductSheets(
   }))
 }
 
-export async function readContentRows(config: SheetsConfig): Promise<unknown[][]> {
+export async function readContentRows(
+  config: SheetsConfig,
+): Promise<unknown[][]> {
   const client = createSheetsClient(config)
   const range = encodeURIComponent("'Continguts'!A1:B1000")
   const url = new URL(spreadsheetUrl(config) + '/values/' + range)
@@ -92,4 +103,21 @@ export async function readContentRows(config: SheetsConfig): Promise<unknown[][]
     retry: false,
   })
   return data.values ?? []
+}
+
+export async function writeSiteContent(
+  config: SheetsConfig,
+  content: SiteContent,
+): Promise<void> {
+  const rows = await readContentRows(config)
+  const body = prepareContentUpdate(rows, content)
+  const client = createSheetsClient(config, true)
+  const { data } = await client.request<{ totalUpdatedCells?: number }>({
+    url: spreadsheetUrl(config) + '/values:batchUpdate',
+    method: 'POST',
+    data: body,
+    timeout: 10000,
+    retry: false,
+  })
+  if (data.totalUpdatedCells !== 7) throw new Error('Incomplete content update')
 }

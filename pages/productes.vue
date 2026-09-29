@@ -2,6 +2,12 @@
 import type { Product } from '~/types/product'
 import { getVisibleProducts } from '~/utils/products'
 
+const {
+  data: content,
+  status: contentStatus,
+  refresh: refreshContent,
+} = await useSiteContent()
+
 const search = ref('')
 const category = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
@@ -39,10 +45,15 @@ function resetFilters() {
     <section aria-labelledby="products-title" :aria-busy="loading">
       <div class="page-heading">
         <p class="eyebrow">La nostra selecció</p>
-        <h1 id="products-title"><em>Productes.</em></h1>
-        <p class="lead">Alimentació, infusions, suplements i cura personal.</p>
-        <p class="body-copy">
-          Descobreix la selecció de La Circular per al teu dia a dia.
+        <h1 id="products-title" class="editable-title">
+          <em>{{ content?.products_title ?? 'Productes' }}</em>
+        </h1>
+        <ContentStatus :status="contentStatus" @retry="refreshContent()" />
+        <p
+          v-if="content && contentStatus === 'success'"
+          class="lead editable-text"
+        >
+          {{ content.products_intro }}
         </p>
       </div>
 

@@ -1,3 +1,11 @@
+<script setup lang="ts">
+const {
+  data: content,
+  status: contentStatus,
+  refresh: refreshContent,
+} = await useSiteContent()
+</script>
+
 <template>
   <div class="container">
     <section class="hero" aria-labelledby="home-title">
@@ -6,12 +14,21 @@
           <span class="small-dot" aria-hidden="true"></span> Benestar, amb
           proximitat
         </p>
-        <h1 id="home-title">Benvinguts a <em>La Circular.</em></h1>
-        <p class="lead">La teva botiga de dietètica de barri.</p>
-        <p class="body-copy">
-          Un espai proper per cuidar-te cada dia. A La Circular volem
-          acompanyar-te amb una atenció personal i una selecció de productes per
-          al teu benestar.
+        <h1 id="home-title" class="editable-title">
+          {{ content?.home_title ?? 'La Circular' }}
+        </h1>
+        <ContentStatus :status="contentStatus" @retry="refreshContent()" />
+        <p
+          v-if="content && contentStatus === 'success'"
+          class="lead editable-text"
+        >
+          {{ content.home_subtitle }}
+        </p>
+        <p
+          v-if="content && contentStatus === 'success'"
+          class="body-copy editable-text"
+        >
+          {{ content.home_text }}
         </p>
         <div class="hero-actions">
           <NuxtLink class="button" to="/productes"

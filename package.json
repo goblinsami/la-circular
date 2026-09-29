@@ -8,9 +8,10 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "test": "node --experimental-strip-types --test tests/products.test.ts tests/product-normalization.test.ts tests/content-normalization.test.ts"
+    "test": "node --experimental-strip-types --test tests/products.test.ts tests/product-normalization.test.ts tests/content-normalization.test.ts tests/content-update.test.ts"
   },
   "dependencies": {
+    "@netlify/identity": "^2.0.0",
     "google-auth-library": "^11.1.0",
     "nuxt": "^3.0.0",
     "vue": "^3.5.0",

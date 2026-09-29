@@ -158,4 +158,4 @@ Cuando esté preparado, envíame:
 3. La **ruta local del JSON descargado**, sin pegar la clave.
 4. Confirmación de que habilitaste Google Sheets API y compartiste la hoja como Lector.
 
-Verificación completada el 29/09/2026: autenticación y lectura correctas con la cuenta de servicio. Se han revisado las seis pestañas, los encabezados, los IDs, los tipos de precio/activo/orden y las siete claves de contenido, sin incidencias. Hay 16 productos: 13 activos y 3 inactivos, todos sin imagen. La fase 6 se ha completado: /api/products y el catálogo leen el Sheet. La lectura de textos corresponde a la fase 7.
+Verificación completada el 29/09/2026: autenticación y lectura correctas con la cuenta de servicio. Se han revisado las seis pestañas, los encabezados, los IDs, los tipos de precio/activo/orden y las siete claves de contenido, sin incidencias. Hay 16 productos: 13 activos y 3 inactivos, todos sin imagen. La fase 6 se ha completado: /api/products y el catálogo leen el Sheet. La fase 7 también está completada: /api/content y las tres páginas leen los siete textos de Continguts. Su edición se hará desde el panel de administración en la fase 9.

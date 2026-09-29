@@ -1,8 +1,8 @@
 # La Circular
 
-Fase 6: catálogo conectado a Google Sheets mediante la ruta privada del servidor
+Catálogo y textos conectados a Google Sheets mediante el servidor
 `GET /api/products`. La ruta devuelve únicamente el catálogo público normalizado.
-Los textos de las páginas siguen locales; su conexión corresponde a la fase 7.
+Los siete textos editables se leen de `Continguts` mediante `GET /api/content`.
 
 Proyecto: `C:\WORKSPACE\la-circular`. Stack: Nuxt 3 y TypeScript.
 
@@ -72,9 +72,28 @@ con sus cabeceras o credenciales.
 Las tarjetas actuales funcionan sin imágenes. La integración de imágenes se
 mantiene pendiente de las fases previstas.
 
+## Textos de las páginas
+
+`GET /api/content` lee `Continguts!A1:B1000`, comprueba los encabezados `clau`
+y `valor`, y devuelve exclusivamente las siete claves previstas:
+`home_title`, `home_subtitle`, `home_text`, `project_title`, `project_content`,
+`products_title` y `products_intro`.
+
+Las siete claves deben tener texto y no estar repetidas. Se conservan los saltos
+de línea y se muestra texto plano, sin interpretar HTML. Las páginas comparten
+la carga mediante `useSiteContent`, con estado de carga y reintento ante errores.
+Un fallo de los textos no impide mostrar el catálogo. No hay caché de servidor.
+
+La edición de estos textos ya está implementada en el panel de administración (fase 9).
+La fase 7 solo incorpora lectura y no modifica el documento de Google Sheets.
+
 ## Estructura
 
 - `server/api/products.get.ts`: API pública del catálogo.
+- `server/api/content.get.ts`: API pública de los siete textos editables.
+- `server/utils/content-normalization.ts`: validación de claves y textos.
+- `types/content.ts`, `composables/useSiteContent.ts`: modelo y carga compartida de textos.
+- `components/ContentStatus.vue`: carga y reintento de los textos.
 - `server/utils/google-sheets.ts`: lectura autenticada con la biblioteca oficial de Google.
 - `server/utils/product-normalization.ts`: validación, normalización y orden.
 - `types/product.ts`: modelo Product.
@@ -84,7 +103,7 @@ mantiene pendiente de las fases previstas.
 - `tests/`: pruebas de normalización y filtrado con el ejecutor integrado de Node.
 - `assets/css/main.css`: diseño responsive, colores y tipografías del sistema.
 - `layouts/default.vue`, `components/SiteHeader.vue`, `components/SiteFooter.vue`: estructura compartida.
-- `pages/index.vue`, `pages/el-nostre-projecte.vue`: páginas de texto provisional.
+- `pages/index.vue`, `pages/el-nostre-projecte.vue`: páginas con textos de `Continguts`.
 - `nuxt.config.ts`: configuración y claves privadas de runtimeConfig, con valores vacíos por defecto.
 
 Los mocks de productos de la fase 4 se han retirado. Nuxt genera `.nuxt` y
@@ -101,22 +120,40 @@ npm run build
 npm run preview
 ```
 
-La fase 6 se ha verificado con 16 tests, comprobación TypeScript y compilación.
-También se ha comprobado la versión compilada en navegador a 320, 390, 768 y
-1440 píxeles, los filtros, carga, errores, reintento y catálogo vacío.
-Las respuestas y los archivos públicos compilados se han comprobado sin credenciales.
+La fase 7 se ha verificado con 22 tests, comprobación TypeScript y compilación.
+Las tres páginas se han comprobado en navegador a 320, 390 y 1440 píxeles,
+incluidos accesibilidad automática, carga, errores, reintento, saltos de línea
+y representación segura del texto. Los siete valores de la API coinciden con
+una lectura independiente del Sheet. El catálogo mantiene 13 productos activos.
+También se han verificado los errores controlados por configuración ausente y
+Sheet inaccesible, sin exponer credenciales.
 
-## Comprobación manual de la fase 6
+## Comprobación manual de la fase 7
 
-1. Abre `/productes`: en la verificación del 29/09/2026 aparecen 13 productos activos.
-2. Comprueba que los nombres y precios coinciden con el Sheet, por ejemplo Magnesi citrat.
-3. Combina una búsqueda y una categoría; limpia ambos con «Neteja els filtres».
-4. Abre `/api/products`: devuelve JSON público sin credenciales ni productos inactivos.
-5. Si quieres comprobar una actualización, cambia un nombre o el estado actiu en el
-   Sheet y recarga la página. Restaura después el dato si era una prueba.
-6. Comprueba navegación y filtros en móvil y con teclado.
+1. Abre `/`, `/el-nostre-projecte` y `/productes`: sus textos vienen de `Continguts`.
+2. Revisa títulos, párrafos y navegación tanto en móvil como en escritorio.
+3. Comprueba que `/productes` mantiene la búsqueda y el filtro por categoría.
+4. Abre `/api/content`: devuelve únicamente las siete claves de texto.
 
-Las pruebas automáticas no han modificado el Sheet. El permiso de la cuenta de
-servicio sigue siendo de lectura.
+Las pruebas automáticas no han modificado el Sheet. La fase 9 requiere cambiar el permiso de la cuenta de servicio a Editor.
 
-La fase 7, pendiente de confirmación, leerá los textos de `Continguts`.
+## Fase 8: acceso de administrador
+
+Web desplegada: https://la-circular.netlify.app
+
+Se han implementado `/admin`, `useAdminAuth`, invitaciones, login/logout y
+protección de `/api/admin/*` en el servidor con `@netlify/identity`.
+Identity está configurado como Invite only. El propietario ha confirmado el acceso real y autorizado la fase 9.
+
+Consulta la [guía de Netlify e Identity](docs/netlify-identity.md) para la
+configuración, despliegue y comprobaciones.
+
+## Fase 9: edición de textos
+
+El panel permite editar y guardar los siete textos, con validación, estados de
+carga y error, y aviso de cambios pendientes. La API administrativa verifica
+Identity y el origen antes de escribir. Han pasado 27 tests y las pruebas aisladas
+del servidor y el navegador.
+
+Consulta la [guía de edición](docs/admin-content.md). Quedan pendientes confirmar
+el permiso Editor de la cuenta de servicio y guardar desde la sesión real.

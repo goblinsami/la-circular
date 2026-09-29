@@ -7,6 +7,16 @@ export default defineNuxtConfig({
     googleServiceAccountEmail: '',
     googlePrivateKey: '',
   },
+  routeRules: {
+    '/admin': {
+      ssr: false,
+      headers: {
+        'cache-control': 'private, no-store',
+        'x-robots-tag': 'noindex, nofollow',
+        'referrer-policy': 'no-referrer',
+      },
+    },
+  },
   typescript: {
     strict: true,
   },

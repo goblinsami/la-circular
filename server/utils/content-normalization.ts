@@ -2,7 +2,7 @@ import { contentKeys } from '../../types/content.ts'
 import type { ContentKey, SiteContent } from '../../types/content'
 
 function isContentKey(value: unknown): value is ContentKey {
-  return typeof value === 'string' && contentKeys.some(key => key === value)
+  return typeof value === 'string' && contentKeys.some((key) => key === value)
 }
 
 export function normalizeContentRows(rows: unknown[][]): SiteContent {
@@ -23,7 +23,7 @@ export function normalizeContentRows(rows: unknown[][]): SiteContent {
     content[key] = row[1].replace(/\r\n?/g, '\n').trim()
   }
 
-  if (contentKeys.some(key => !(key in content))) {
+  if (contentKeys.some((key) => !(key in content))) {
     throw new Error('Missing content key')
   }
   return content as SiteContent
