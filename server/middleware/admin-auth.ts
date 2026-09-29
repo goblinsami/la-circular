@@ -24,7 +24,12 @@ export default defineEventHandler(async (event) => {
   // Cookie-authenticated writes must also come from this site's origin.
   if (!['GET', 'HEAD', 'OPTIONS'].includes(event.method)) {
     try {
-      verifyRequestOrigin(toWebRequest(event))
+      const origin = getHeader(event, 'origin')
+      verifyRequestOrigin(
+        new Request(getRequestURL(event), {
+          headers: origin ? { origin } : undefined,
+        }),
+      )
     } catch {
       throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
     }
