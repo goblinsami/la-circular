@@ -3,7 +3,7 @@ import { v2 as cloudinary } from 'cloudinary'
 
 interface CloudinaryConfig {
   cloudinaryCloudName: string
-  cloudinaryApiKey: string
+  cloudinaryApiKey: string | number
   cloudinaryApiSecret: string
 }
 
@@ -12,23 +12,43 @@ interface ImageServiceConfig {
   googleServiceAccountEmail?: string
   googlePrivateKey?: string
   cloudinaryCloudName?: string
-  cloudinaryApiKey?: string
+  cloudinaryApiKey?: string | number
   cloudinaryApiSecret?: string
 }
 
 export function getMissingImageConfiguration(
   config: ImageServiceConfig,
+  environment: Record<string, string | undefined> = process.env,
 ): string[] {
-  const required: Array<[string, string | undefined]> = [
-    ['NUXT_GOOGLE_SHEET_ID', config.googleSheetId],
-    ['NUXT_GOOGLE_SERVICE_ACCOUNT_EMAIL', config.googleServiceAccountEmail],
-    ['NUXT_GOOGLE_PRIVATE_KEY', config.googlePrivateKey],
-    ['NUXT_CLOUDINARY_CLOUD_NAME', config.cloudinaryCloudName],
-    ['NUXT_CLOUDINARY_API_KEY', config.cloudinaryApiKey],
-    ['NUXT_CLOUDINARY_API_SECRET', config.cloudinaryApiSecret],
+  const required: Array<[string, unknown, string]> = [
+    ['NUXT_GOOGLE_SHEET_ID', config.googleSheetId, 'NUXT_GOOGLE_SHEET_ID'],
+    [
+      'NUXT_GOOGLE_SERVICE_ACCOUNT_EMAIL',
+      config.googleServiceAccountEmail,
+      'NUXT_GOOGLE_SERVICE_ACCOUNT_EMAIL',
+    ],
+    ['NUXT_GOOGLE_PRIVATE_KEY', config.googlePrivateKey, 'NUXT_GOOGLE_PRIVATE_KEY'],
+    [
+      'NUXT_CLOUDINARY_CLOUD_NAME',
+      config.cloudinaryCloudName,
+      'NUXT_CLOUDINARY_CLOUD_NAME',
+    ],
+    [
+      'NUXT_CLOUDINARY_API_KEY',
+      config.cloudinaryApiKey,
+      'NUXT_CLOUDINARY_API_KEY',
+    ],
+    [
+      'NUXT_CLOUDINARY_API_SECRET',
+      config.cloudinaryApiSecret,
+      'NUXT_CLOUDINARY_API_SECRET',
+    ],
   ]
   return required
-    .filter(([, value]) => typeof value !== 'string' || !value.trim())
+    .filter(([, value, environmentKey]) => {
+      const text = typeof value === 'string' ? value : environment[environmentKey]
+      return typeof text !== 'string' || !text.trim()
+    })
     .map(([key]) => key)
 }
 
@@ -50,9 +70,18 @@ export function getCloudinaryEnvironmentPresence(
 
 // Server-only configuration. Pass these options to the official SDK;
 // never put them in runtimeConfig.public or return them from an API.
-export function getCloudinaryOptions(config: CloudinaryConfig) {
+export function getCloudinaryOptions(
+  config: CloudinaryConfig,
+  environment: Record<string, string | undefined> = process.env,
+) {
   const cloudName = config.cloudinaryCloudName.trim()
-  const apiKey = config.cloudinaryApiKey.trim()
+  const apiKeyValue = environment.NUXT_CLOUDINARY_API_KEY ?? config.cloudinaryApiKey
+  const apiKey =
+    typeof apiKeyValue === 'string'
+      ? apiKeyValue.trim()
+      : Number.isFinite(apiKeyValue)
+        ? String(apiKeyValue)
+        : ''
   const apiSecret = config.cloudinaryApiSecret.trim()
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error('Missing Cloudinary configuration')

@@ -4,6 +4,7 @@ import { test } from 'node:test'
 import {
   getCloudinaryEnvironmentPresence,
   getMissingImageConfiguration,
+  getCloudinaryOptions,
   getProductImagePublicId,
 } from '../server/utils/cloudinary.ts'
 
@@ -79,5 +80,34 @@ test('rejects URLs outside the product image namespace', () => {
       `https://res.cloudinary.com/test-cloud/image/upload/${folder}/${uuid}.jpg`,
     ),
     null,
+  )
+})
+
+test('preserves the raw all-digit API key instead of Nuxt parsed number', () => {
+  const rawApiKey = '0001234567890123456789'
+  assert.deepEqual(
+    getMissingImageConfiguration(
+      {
+        googleSheetId: 'sheet-id',
+        googleServiceAccountEmail: 'service@example.test',
+        googlePrivateKey: 'private-key',
+        cloudinaryCloudName: 'test-cloud',
+        cloudinaryApiKey: 12345678901234568,
+        cloudinaryApiSecret: 'api-secret',
+      },
+      { NUXT_CLOUDINARY_API_KEY: rawApiKey },
+    ),
+    [],
+  )
+  assert.equal(
+    getCloudinaryOptions(
+      {
+        cloudinaryCloudName: 'test-cloud',
+        cloudinaryApiKey: 12345678901234568,
+        cloudinaryApiSecret: 'api-secret',
+      },
+      { NUXT_CLOUDINARY_API_KEY: rawApiKey },
+    ).api_key,
+    rawApiKey,
   )
 })
