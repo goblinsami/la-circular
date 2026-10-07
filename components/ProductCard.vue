@@ -11,6 +11,15 @@ const priceFormatter = new Intl.NumberFormat('ca-ES', {
 
 <template>
   <article class="card product-card" :aria-labelledby="'product-' + product.id">
+    <figure v-if="product.imatge" class="product-image-frame">
+      <img
+        :src="product.imatge"
+        :alt="'Imatge de ' + product.nom"
+        class="product-image"
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
     <p class="product-category">{{ product.categoria }}</p>
     <h2 :id="'product-' + product.id">{{ product.nom }}</h2>
     <p v-if="product.descripcio" class="product-description">

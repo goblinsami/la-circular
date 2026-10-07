@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Product } from '~/types/product'
+import { fallbackSiteContent } from '~/composables/useSiteContent'
 import { getVisibleProducts } from '~/utils/products'
 
 const {
@@ -7,6 +8,14 @@ const {
   status: contentStatus,
   refresh: refreshContent,
 } = await useSiteContent()
+const contentLoading = computed(
+  () => contentStatus.value === 'idle' || contentStatus.value === 'pending',
+)
+const displayedContent = computed(() =>
+  contentStatus.value === 'error'
+    ? fallbackSiteContent
+    : (content.value ?? fallbackSiteContent),
+)
 
 const search = ref('')
 const category = ref('')
@@ -43,17 +52,19 @@ function resetFilters() {
 <template>
   <div class="container page-section">
     <section aria-labelledby="products-title" :aria-busy="loading">
-      <div class="page-heading">
+      <ContentSectionLoader v-if="contentLoading" variant="products" />
+      <div v-else class="page-heading">
         <p class="eyebrow">La nostra selecció</p>
         <h1 id="products-title" class="editable-title">
-          <em>{{ content?.products_title ?? 'Productes' }}</em>
+          <em>{{ displayedContent.products_title }}</em>
         </h1>
-        <ContentStatus :status="contentStatus" @retry="refreshContent()" />
-        <p
-          v-if="content && contentStatus === 'success'"
-          class="lead editable-text"
-        >
-          {{ content.products_intro }}
+        <ContentStatus
+          v-if="contentStatus === 'error'"
+          :status="contentStatus"
+          @retry="refreshContent()"
+        />
+        <p class="lead editable-text">
+          {{ displayedContent.products_intro }}
         </p>
       </div>
 

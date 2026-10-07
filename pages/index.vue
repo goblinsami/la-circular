@@ -1,34 +1,43 @@
 <script setup lang="ts">
+import { fallbackSiteContent } from '~/composables/useSiteContent'
+
 const {
   data: content,
   status: contentStatus,
   refresh: refreshContent,
 } = await useSiteContent()
+const contentLoading = computed(
+  () => contentStatus.value === 'idle' || contentStatus.value === 'pending',
+)
+const displayedContent = computed(() =>
+  contentStatus.value === 'error'
+    ? fallbackSiteContent
+    : (content.value ?? fallbackSiteContent),
+)
 </script>
 
 <template>
   <div class="container">
-    <section class="hero" aria-labelledby="home-title">
+    <ContentSectionLoader v-if="contentLoading" variant="home" />
+    <section v-else class="hero" aria-labelledby="home-title">
       <div class="hero-copy">
         <p class="eyebrow">
           <span class="small-dot" aria-hidden="true"></span> Benestar, amb
           proximitat
         </p>
         <h1 id="home-title" class="editable-title">
-          {{ content?.home_title ?? 'La Circular' }}
+          {{ displayedContent.home_title }}
         </h1>
-        <ContentStatus :status="contentStatus" @retry="refreshContent()" />
-        <p
-          v-if="content && contentStatus === 'success'"
-          class="lead editable-text"
-        >
-          {{ content.home_subtitle }}
+        <ContentStatus
+          v-if="contentStatus === 'error'"
+          :status="contentStatus"
+          @retry="refreshContent()"
+        />
+        <p class="lead editable-text">
+          {{ displayedContent.home_subtitle }}
         </p>
-        <p
-          v-if="content && contentStatus === 'success'"
-          class="body-copy editable-text"
-        >
-          {{ content.home_text }}
+        <p class="body-copy editable-text">
+          {{ displayedContent.home_text }}
         </p>
         <div class="hero-actions">
           <NuxtLink class="button" to="/productes"
