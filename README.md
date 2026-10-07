@@ -157,3 +157,17 @@ del servidor y el navegador.
 
 Consulta la [guía de edición](docs/admin-content.md). Quedan pendientes confirmar
 el permiso Editor de la cuenta de servicio y guardar desde la sesión real.
+
+## Fase 10: Cloudinary
+
+SDK oficial y variables privadas del servidor preparados. El comando
+`npm run check:cloudinary` ha verificado las credenciales locales. Las variables
+están configuradas como secretos en Netlify production Functions.
+Consulta la [guía de Cloudinary](docs/cloudinary.md).
+
+## Fase 11: imágenes de productos
+
+El panel autenticado permite listar productos, subir, sustituir y eliminar
+imágenes JPG, PNG y WebP de hasta 5 MB. Las APIs validan la sesión y actualizan
+la columna `imatge` de Google Sheets. La versión está desplegada en Netlify;
+queda probar el ciclo real desde una sesión admin autenticada.

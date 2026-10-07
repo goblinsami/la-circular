@@ -76,7 +76,18 @@ function showRequestError(cause: unknown, action: 'load' | 'save') {
   } else if (status === 403) {
     error.value =
       'No s’ha autoritzat la petició. Torna a obrir el panell des de la web.'
-  } else if (status === 400 || status === 413 || status === 415) {
+  } else if (status === 413) {
+    error.value =
+      'La petició és massa gran. Redueix la mida dels textos i torna-ho a provar.'
+  } else if (
+    status === 415 ||
+    (status === 400 &&
+      (cause as { data?: { data?: { code?: string } } }).data?.data?.code ===
+        'INVALID_JSON')
+  ) {
+    error.value =
+      'No hem pogut llegir la petició de guardat. Copia els canvis, recarrega el panell i torna-ho a provar.'
+  } else if (status === 400) {
     error.value =
       'Revisa que tots els camps continguin text i respectin el límit de caràcters.'
   } else {

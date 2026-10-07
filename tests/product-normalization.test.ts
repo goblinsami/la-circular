@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { normalizeProductSheets } from '../server/utils/product-normalization.ts'
+import {
+  normalizeAdminProductSheets,
+  normalizeProductSheets,
+} from '../server/utils/product-normalization.ts'
 
 const header = ['id', 'nom', 'descripcio', 'preu', 'imatge', 'actiu', 'ordre']
 const sheet = (rows: unknown[][], title = 'Infusions') => ({
@@ -32,6 +35,33 @@ test('combines categories, excludes contents and inactive products, and sorts nu
   )
   assert.equal(result[0]!.preu, 0)
   assert.ok(result.every((product) => product.actiu === true))
+})
+
+test('admin product list includes inactive rows and their current images', () => {
+  assert.deepEqual(
+    normalizeAdminProductSheets([
+      sheet([
+        ['INF-1', 'Camamilla', '', 3.9, 'https://example.com/tea.jpg', true],
+        ['INF-2', 'Menta', '', 2, '', false],
+      ]),
+    ]),
+    [
+      {
+        id: 'INF-1',
+        nom: 'Camamilla',
+        categoria: 'Infusions',
+        actiu: true,
+        imatge: 'https://example.com/tea.jpg',
+      },
+      {
+        id: 'INF-2',
+        nom: 'Menta',
+        categoria: 'Infusions',
+        actiu: false,
+        imatge: null,
+      },
+    ],
+  )
 })
 
 test('normalizes whitespace, decimal strings and optional fields without extra columns', () => {

@@ -6,6 +6,9 @@ export default defineNuxtConfig({
     googleSheetId: '',
     googleServiceAccountEmail: '',
     googlePrivateKey: '',
+    cloudinaryCloudName: '',
+    cloudinaryApiKey: '',
+    cloudinaryApiSecret: '',
   },
   routeRules: {
     '/admin': {

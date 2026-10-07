@@ -1,7 +1,10 @@
 import { JWT } from 'google-auth-library'
 import type { SiteContent } from '../../types/content'
 import { prepareContentUpdate } from './content-update'
-import type { ProductSheet } from './product-normalization'
+import {
+  normalizeAdminProductSheets,
+  type ProductSheet,
+} from './product-normalization'
 
 interface SheetsConfig {
   googleSheetId: string
@@ -88,6 +91,63 @@ export async function readProductSheets(
     title: sheet.title,
     rows: data.valueRanges![index]!.values ?? [],
   }))
+}
+
+export async function readAdminProducts(config: SheetsConfig) {
+  return normalizeAdminProductSheets(await readProductSheets(config))
+}
+
+export async function writeProductImage(
+  config: SheetsConfig,
+  productId: string,
+  imageUrl: string,
+): Promise<string> {
+  const sheets = await readProductSheets(config)
+  let location: { title: string; rowNumber: number } | undefined
+  let previousImage = ''
+
+  for (const sheet of sheets) {
+    const header = sheet.rows[0] ?? []
+    if (
+      header.length !== 7 ||
+      ['id', 'nom', 'descripcio', 'preu', 'imatge', 'actiu', 'ordre'].some(
+        (name, index) => header[index] !== name,
+      )
+    ) {
+      throw new Error('Invalid product headers')
+    }
+    for (let index = 1; index < sheet.rows.length; index++) {
+      const row = sheet.rows[index]!
+      if (typeof row[0] !== 'string' || row[0].trim() !== productId) continue
+      if (location) throw new Error('Duplicate product id')
+      location = { title: sheet.title, rowNumber: index + 1 }
+      const cell = row[4]
+      if (cell != null && typeof cell !== 'string')
+        throw new Error('Invalid product image')
+      previousImage = typeof cell === 'string' ? cell.trim() : ''
+    }
+  }
+  if (!location) throw new Error('Product not found')
+
+  const quotedTitle = "'" + location.title.replace(/'/g, "''") + "'"
+  const client = createSheetsClient(config, true)
+  const { data } = await client.request<{ totalUpdatedCells?: number }>({
+    url: spreadsheetUrl(config) + '/values:batchUpdate',
+    method: 'POST',
+    data: {
+      valueInputOption: 'RAW',
+      data: [
+        {
+          range: `${quotedTitle}!E${location.rowNumber}`,
+          values: [[imageUrl]],
+        },
+      ],
+    },
+    timeout: 10000,
+    retry: false,
+  })
+  if (data.totalUpdatedCells !== 1) throw new Error('Incomplete image update')
+  return previousImage
 }
 
 export async function readContentRows(

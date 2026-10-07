@@ -7,6 +7,14 @@ export interface ProductSheet {
 
 const headers = ['id', 'nom', 'descripcio', 'preu', 'imatge', 'actiu', 'ordre']
 
+export interface AdminProduct {
+  id: string
+  nom: string
+  categoria: string
+  actiu: boolean
+  imatge: string | null
+}
+
 function isBlank(value: unknown): boolean {
   return value == null || (typeof value === 'string' && value.trim() === '')
 }
@@ -95,4 +103,40 @@ export function normalizeProductSheets(
   }
 
   return products.sort((a, b) => (a.ordre ?? Infinity) - (b.ordre ?? Infinity))
+}
+
+export function normalizeAdminProductSheets(
+  sheets: readonly ProductSheet[],
+): AdminProduct[] {
+  const products: AdminProduct[] = []
+  const ids = new Set<string>()
+
+  for (const sheet of sheets) {
+    if (sheet.title === 'Continguts') continue
+    const header = sheet.rows[0] ?? []
+    if (
+      header.length !== headers.length ||
+      headers.some((name, index) => header[index] !== name)
+    ) {
+      throw new Error('Invalid product headers')
+    }
+    for (const row of sheet.rows.slice(1)) {
+      if (!row.some((value, index) => index !== 5 && !isBlank(value))) continue
+      const id = text(row[0])
+      const nom = text(row[1])
+      if (!id || !nom) throw new Error('Product id and name are required')
+      if (ids.has(id)) throw new Error('Duplicate product id')
+      ids.add(id)
+
+      products.push({
+        id,
+        nom,
+        categoria: sheet.title,
+        actiu: activeValue(row[5]),
+        imatge: text(row[4]) || null,
+      })
+    }
+  }
+
+  return products
 }

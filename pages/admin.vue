@@ -77,8 +77,9 @@ async function submit() {
               {{ busy ? 'Tancant la sessió…' : 'Tanca la sessió' }}
             </button>
           </div>
-          <AdminContentEditor @state="editorState = $event"
-        /></template>
+          <AdminContentEditor @state="editorState = $event" />
+          <AdminImageEditor />
+        </template>
         <template v-else-if="available">
           <p class="lead">
             {{

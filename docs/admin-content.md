@@ -72,8 +72,32 @@ actualización pública, recarga y avisos de salida. Responsive y accesibilidad
 automática comprobados a 320, 390 y 1440 píxeles.
 
 En Netlify real se han verificado GET y POST administrativos con respuesta 401 ante sesiones ausentes o falsas, y las páginas públicas siguen funcionando. Estas pruebas no han escrito en el Sheet real ni creado accesos de prueba en producción.
-El simulador está fuera del proyecto y no forma parte del despliegue.
+Las pruebas de navegador aisladas no forman parte del despliegue. La regresión del adaptador de Netlify se conserva en tests/netlify-content.test.mjs; tampoco se incluye en las funciones publicadas.
 
 Para cerrar la fase, falta cambiar un texto desde la sesión real, guardarlo,
 verlo en la página pública y confirmar que permanece al recargar el panel.
 Después se espera confirmación antes de pasar a Cloudinary.
+
+## Regresión del guardado en Netlify (07/10/2026)
+
+La comprobación de origen debe leer solo URL y cabeceras. Convertir el evento
+completo con `toWebRequest(event)` consumía su cuerpo en el adaptador de Netlify:
+una petición JSON válida terminaba rechazada como contenido vacío. La comprobación
+actual construye una Request sin cuerpo y conserva la protección de origen.
+Se ha reproducido el rechazo con la versión anterior y el guardado correcto con
+la versión corregida, sin escribir en el Sheet real.
+
+Para ejecutar la regresión usando el mismo adaptador que producción:
+
+```powershell
+$env:NITRO_PRESET = 'netlify'
+npm run build
+npm run test:netlify
+Remove-Item Env:NITRO_PRESET
+```
+
+La prueba utiliza Identity y Sheets simulados, rechaza cualquier otra llamada
+externa y comprueba POST con/sin Content-Length, lectura autenticada, 401, 403
+y errores de formato, campos y tamaño. Los mensajes del panel distinguen estos
+errores. Sigue pendiente confirmar un guardado desde la sesión real del usuario;
+la edición directa del Sheet solo verifica la lectura pública.

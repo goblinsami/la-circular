@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
   // Cookie-authenticated writes must also come from this site's origin.
   if (!['GET', 'HEAD', 'OPTIONS'].includes(event.method)) {
     try {
+      // Check headers only: toWebRequest(event) consumes the streamed body in Netlify.
       const origin = getHeader(event, 'origin')
       verifyRequestOrigin(
         new Request(getRequestURL(event), {

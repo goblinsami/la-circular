@@ -22,11 +22,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, statusMessage: 'Content too large' })
   }
 
+  let input: unknown
+  try {
+    input = JSON.parse(raw ?? '')
+  } catch {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid JSON',
+      data: { code: 'INVALID_JSON' },
+    })
+  }
+
   let content
   try {
-    content = validateContentInput(JSON.parse(raw ?? ''))
+    content = validateContentInput(input)
   } catch {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid content' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid content',
+      data: { code: 'INVALID_CONTENT' },
+    })
   }
 
   const config = useRuntimeConfig(event)
