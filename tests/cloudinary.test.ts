@@ -1,7 +1,11 @@
 import { createHash } from 'node:crypto'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { getProductImagePublicId } from '../server/utils/cloudinary.ts'
+import {
+  getCloudinaryEnvironmentPresence,
+  getMissingImageConfiguration,
+  getProductImagePublicId,
+} from '../server/utils/cloudinary.ts'
 
 const config = {
   cloudinaryCloudName: 'test-cloud',
@@ -13,6 +17,38 @@ const uuid = '550e8400-e29b-41d4-a716-446655440000'
 const folder =
   'la-circular/products/' +
   createHash('sha256').update(productId).digest('hex').slice(0, 20)
+
+test('reports missing image service keys without exposing configured values', () => {
+  const configuredValues = {
+    googleSheetId: 'sheet-id',
+    googleServiceAccountEmail: 'service@example.test',
+    googlePrivateKey: 'private-key',
+    cloudinaryCloudName: undefined,
+    cloudinaryApiKey: 'api-key',
+    cloudinaryApiSecret: '',
+  }
+  const missing = getMissingImageConfiguration(configuredValues)
+  assert.deepEqual(
+    missing,
+    ['NUXT_CLOUDINARY_CLOUD_NAME', 'NUXT_CLOUDINARY_API_SECRET'],
+  )
+  assert.ok(missing.every((key) => !Object.values(configuredValues).includes(key)))
+})
+
+test('reports only boolean Cloudinary environment presence', () => {
+  assert.deepEqual(
+    getCloudinaryEnvironmentPresence({
+      NUXT_CLOUDINARY_CLOUD_NAME: 'cloud-name',
+      NUXT_CLOUDINARY_API_KEY: '',
+      NUXT_CLOUDINARY_API_SECRET: 'secret-value',
+    }),
+    {
+      NUXT_CLOUDINARY_CLOUD_NAME: true,
+      NUXT_CLOUDINARY_API_KEY: false,
+      NUXT_CLOUDINARY_API_SECRET: true,
+    },
+  )
+})
 
 test('accepts a versioned Cloudinary URL owned by the requested product', () => {
   assert.equal(

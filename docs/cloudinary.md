@@ -1,8 +1,8 @@
 # Fase 10: configuración de Cloudinary
 
-Estado: conexión local verificada; secretos privados configurados en el contexto
-production de Netlify para Functions; versión desplegada. Pendiente probar
-el ciclo de imágenes desde una sesión admin autenticada.
+Estado: conexión local verificada; secrets configurados en Netlify en contexto
+production con scopes por defecto; flujo desplegado. Pendiente probar el ciclo de
+imágenes desde una sesión admin autenticada.
 
 ## Credenciales
 
@@ -39,18 +39,21 @@ La interfaz para gestionar imágenes está dentro del panel autenticado `/admin`
 
 ## Netlify
 
-Las tres variables se configuraron como secretos del proyecto `la-circular`, en
-el contexto production y con alcance Functions. El API secret no puede
-volverse a leer desde Netlify. La conexión local se verificó con `api.ping`.
+El plan actual del proyecto (`nf_team_dev`) no permite scopes granulares. Con
+autorización del propietario, las variables se configuraron como secrets con
+scopes por defecto (`builds`, `functions` y `runtime`) y contexto solo
+`production`. Por ello el proceso de build de producción también puede acceder
+a estos secrets. La conexión local se verificó con `api.ping`.
 
-El despliegue de producción ya está publicado en `https://la-circular.netlify.app`.
-Las operaciones de subida,
+El código del flujo está desplegado en `https://la-circular.netlify.app`. Los
+errores de subida incluyen un `traceId`; los logs registran la etapa y códigos
+de error seguros, sin credenciales, URLs ni datos de imagen. Las operaciones de subida,
 sustitución y eliminación se ofrecen en `/admin`, y actualizan la columna
 `imatge` de la fila del producto en Google Sheets. El panel acepta JPG, PNG y
 WebP de hasta 5 MB, por debajo del límite de petición de Netlify Functions;
 las credenciales siguen siendo privadas del servidor.
-La fase 11 queda pendiente de probar el ciclo completo con una imagen real desde
-una sesión admin autenticada.
+La fase 11 queda pendiente de configurar el scope y probar el ciclo completo
+con una imagen real desde una sesión admin autenticada.
 
 ## Pendiente para la revisión final
 

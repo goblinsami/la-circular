@@ -7,6 +7,47 @@ interface CloudinaryConfig {
   cloudinaryApiSecret: string
 }
 
+interface ImageServiceConfig {
+  googleSheetId?: string
+  googleServiceAccountEmail?: string
+  googlePrivateKey?: string
+  cloudinaryCloudName?: string
+  cloudinaryApiKey?: string
+  cloudinaryApiSecret?: string
+}
+
+export function getMissingImageConfiguration(
+  config: ImageServiceConfig,
+): string[] {
+  const required: Array<[string, string | undefined]> = [
+    ['NUXT_GOOGLE_SHEET_ID', config.googleSheetId],
+    ['NUXT_GOOGLE_SERVICE_ACCOUNT_EMAIL', config.googleServiceAccountEmail],
+    ['NUXT_GOOGLE_PRIVATE_KEY', config.googlePrivateKey],
+    ['NUXT_CLOUDINARY_CLOUD_NAME', config.cloudinaryCloudName],
+    ['NUXT_CLOUDINARY_API_KEY', config.cloudinaryApiKey],
+    ['NUXT_CLOUDINARY_API_SECRET', config.cloudinaryApiSecret],
+  ]
+  return required
+    .filter(([, value]) => typeof value !== 'string' || !value.trim())
+    .map(([key]) => key)
+}
+
+export function getCloudinaryEnvironmentPresence(
+  environment: Record<string, string | undefined> = process.env,
+) {
+  return {
+    NUXT_CLOUDINARY_CLOUD_NAME: Boolean(
+      environment.NUXT_CLOUDINARY_CLOUD_NAME?.trim(),
+    ),
+    NUXT_CLOUDINARY_API_KEY: Boolean(
+      environment.NUXT_CLOUDINARY_API_KEY?.trim(),
+    ),
+    NUXT_CLOUDINARY_API_SECRET: Boolean(
+      environment.NUXT_CLOUDINARY_API_SECRET?.trim(),
+    ),
+  }
+}
+
 // Server-only configuration. Pass these options to the official SDK;
 // never put them in runtimeConfig.public or return them from an API.
 export function getCloudinaryOptions(config: CloudinaryConfig) {
@@ -47,7 +88,29 @@ export async function uploadProductImage(
       },
       (error, result) => {
         if (error || !result?.secure_url) {
-          reject(new Error('Image upload failed'))
+          const failure = new Error('Cloudinary upload failed') as Error & {
+            providerStatus?: number
+            providerCode?: string
+          }
+          failure.name = 'CloudinaryUploadError'
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'http_code' in error &&
+            typeof error.http_code === 'number'
+          ) {
+            failure.providerStatus = error.http_code
+          }
+          if (
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            typeof error.code === 'string' &&
+            /^[A-Za-z0-9_-]{1,32}$/.test(error.code)
+          ) {
+            failure.providerCode = error.code
+          }
+          reject(failure)
           return
         }
         resolve(result.secure_url)

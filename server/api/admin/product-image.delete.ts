@@ -1,4 +1,8 @@
-import { deleteProductImage } from '../../utils/cloudinary'
+import {
+  deleteProductImage,
+  getCloudinaryEnvironmentPresence,
+  getMissingImageConfiguration,
+} from '../../utils/cloudinary'
 import { writeProductImage } from '../../utils/google-sheets'
 
 export default defineEventHandler(async (event) => {
@@ -16,17 +20,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, statusMessage: 'Request too large' })
   }
   const config = useRuntimeConfig(event)
-  if (
-    !config.googleSheetId ||
-    !config.googleServiceAccountEmail ||
-    !config.googlePrivateKey ||
-    !config.cloudinaryCloudName ||
-    !config.cloudinaryApiKey ||
-    !config.cloudinaryApiSecret
-  ) {
+  const missingConfiguration = getMissingImageConfiguration(config)
+  if (missingConfiguration.length) {
+    console.error(
+      'Product image service missing runtime configuration:',
+      missingConfiguration.join(', '),
+    )
     throw createError({
       statusCode: 503,
       statusMessage: 'Image service unavailable',
+      data: {
+        missingConfiguration,
+        environmentPresence: getCloudinaryEnvironmentPresence(),
+      },
     })
   }
 
