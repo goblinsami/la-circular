@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 const route = useRoute()
 const menuOpen = ref(false)
 const menuReady = ref(false)
@@ -31,13 +32,13 @@ onMounted(() => {
       <NuxtLink
         class="brand"
         to="/"
-        aria-label="La Circular — Inici"
+        :aria-label="t('header_la_circular_inici')"
         @click="closeMenu()"
       >
         <span class="brand-mark" aria-hidden="true"></span>
         <span
-          >La Circular<span class="brand-caption"
-            >DIETÈTICA DE BARRI</span
+          >{{ t('header_la_circular') }}<span class="brand-caption"
+            >{{ t('header_dietetica_de_barri') }}</span
           ></span
         >
       </NuxtLink>
@@ -50,7 +51,7 @@ onMounted(() => {
         :aria-expanded="menuOpen"
         @click="menuOpen = !menuOpen"
       >
-        {{ menuOpen ? 'Tanca' : 'Menú' }}
+        {{ menuOpen ? t('header_close_menu') : t('header_menu') }}
         <span
           class="menu-icon"
           :class="{ 'is-open': menuOpen }"
@@ -61,14 +62,14 @@ onMounted(() => {
         id="main-navigation"
         class="site-nav"
         :class="{ 'is-open': menuOpen, 'is-ready': menuReady }"
-        aria-label="Navegació principal"
+        :aria-label="t('header_navegacio_principal')"
       >
         <ul>
-          <li><NuxtLink to="/">Inici</NuxtLink></li>
+          <li><NuxtLink to="/">{{ t('header_inici') }}</NuxtLink></li>
           <li>
-            <NuxtLink to="/el-nostre-projecte">El nostre projecte</NuxtLink>
+            <NuxtLink to="/el-nostre-projecte">{{ t('home_el_nostre_projecte') }}</NuxtLink>
           </li>
-          <li><NuxtLink to="/productes">Productes</NuxtLink></li>
+          <li><NuxtLink to="/productes">{{ t('products_productes') }}</NuxtLink></li>
         </ul>
       </nav>
     </div>

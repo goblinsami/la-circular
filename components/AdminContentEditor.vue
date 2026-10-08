@@ -1,7 +1,8 @@
 <script setup lang="ts">
+const t = useSiteText()
 import { onBeforeRouteLeave } from 'vue-router'
-import { contentKeys } from '~/types/content'
-import type { ContentKey, SiteContent } from '~/types/content'
+import { contentKeys, contentFields } from '~/types/content'
+import type { SiteContent } from '~/types/content'
 import { contentLimits, validateContentInput } from '~/utils/content-validation'
 
 const emit = defineEmits<{
@@ -13,38 +14,14 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
 const saved = ref(false)
+const sharedContent = useNuxtData<SiteContent>('site-content')
 
-const groups: Array<{
-  title: string
-  path: string
-  fields: Array<{ key: ContentKey; label: string; rows?: number }>
-}> = [
-  {
-    title: 'Inici',
-    path: '/',
-    fields: [
-      { key: 'home_title', label: 'Títol de la pàgina d’inici' },
-      { key: 'home_subtitle', label: 'Subtítol', rows: 2 },
-      { key: 'home_text', label: 'Text principal', rows: 5 },
-    ],
-  },
-  {
-    title: 'El nostre projecte',
-    path: '/el-nostre-projecte',
-    fields: [
-      { key: 'project_title', label: 'Títol del projecte' },
-      { key: 'project_content', label: 'Contingut del projecte', rows: 8 },
-    ],
-  },
-  {
-    title: 'Productes',
-    path: '/productes',
-    fields: [
-      { key: 'products_title', label: 'Títol del catàleg' },
-      { key: 'products_intro', label: 'Introducció del catàleg', rows: 4 },
-    ],
-  },
-]
+const groups = computed(() => [...new Set(contentFields.map(field => field.group))].map(group => ({
+  id: group,
+  title: t(group === 'home' ? 'editor_group_home' : group === 'project' ? 'editor_group_project' : group === 'products' ? 'editor_group_products' : group === 'header' ? 'editor_group_header' : group === 'footer' ? 'editor_group_footer' : group === 'common' ? 'editor_group_common' : 'editor_group_admin'),
+  path: group === 'project' ? '/el-nostre-projecte' : group === 'products' ? '/productes' : group === 'admin' ? '/admin' : '/',
+  fields: contentFields.filter(field => field.group === group).map(field => ({ key: field.key, rows: field.limit > 500 ? 4 : undefined })),
+})))
 
 const dirty = computed(() =>
   Boolean(
@@ -72,13 +49,13 @@ function showRequestError(cause: unknown, action: 'load' | 'save') {
   const status = (cause as { statusCode?: number }).statusCode
   if (status === 401) {
     error.value =
-      'La sessió ha caducat. Copia els canvis abans de tornar a iniciar la sessió.'
+      t('admin_la_sessio_ha_caducat_copia_els_canvis')
   } else if (status === 403) {
     error.value =
-      'No s’ha autoritzat la petició. Torna a obrir el panell des de la web.'
+      t('admin_no_s_ha_autoritzat_la_peticio_torna')
   } else if (status === 413) {
     error.value =
-      'La petició és massa gran. Redueix la mida dels textos i torna-ho a provar.'
+      t('admin_la_peticio_es_massa_gran_redueix_la')
   } else if (
     status === 415 ||
     (status === 400 &&
@@ -86,15 +63,15 @@ function showRequestError(cause: unknown, action: 'load' | 'save') {
         'INVALID_JSON')
   ) {
     error.value =
-      'No hem pogut llegir la petició de guardat. Copia els canvis, recarrega el panell i torna-ho a provar.'
+      t('admin_no_hem_pogut_llegir_la_peticio_de')
   } else if (status === 400) {
     error.value =
-      'Revisa que tots els camps continguin text i respectin el límit de caràcters.'
+      t('admin_revisa_que_tots_els_camps_continguin_text')
   } else {
     error.value =
       action === 'save'
-        ? 'No hem pogut confirmar que els canvis s’hagin desat. Els textos es conserven aquí perquè puguis tornar-ho a provar.'
-        : 'No hem pogut carregar els textos. Torna-ho a provar.'
+        ? t('admin_no_hem_pogut_confirmar_que_els_canvis')
+        : t('admin_no_hem_pogut_carregar_els_textos_torna')
   }
 }
 
@@ -121,7 +98,7 @@ async function save() {
     content = validateContentInput(draft.value)
   } catch {
     error.value =
-      'Omple tots els camps amb text i respecta el límit de caràcters.'
+      t('admin_omple_tots_els_camps_amb_text_i')
     return
   }
   saving.value = true
@@ -133,7 +110,7 @@ async function save() {
     })
     draft.value = { ...result }
     original.value = { ...result }
-    clearNuxtData('site-content')
+    sharedContent.data.value = result
     saved.value = true
   } catch (cause) {
     showRequestError(cause, 'save')
@@ -151,7 +128,7 @@ onBeforeRouteLeave(() => {
   if (saving.value) return false
   return (
     !dirty.value ||
-    window.confirm('Tens canvis sense desar. Vols sortir igualment?')
+    window.confirm(t('admin_tens_canvis_sense_desar_vols_sortir_igualment'))
   )
 })
 onMounted(() => {
@@ -163,25 +140,20 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
 
 <template>
   <section class="content-editor" aria-labelledby="content-editor-title">
-    <h2 id="content-editor-title">Textos de la web</h2>
-    <p>
-      Edita els textos i desa els canvis per publicar-los. Pots separar els
-      paràgrafs amb salts de línia.
-    </p>
-    <p v-if="loading" role="status">Carregant els textos…</p>
+    <h2 id="content-editor-title">{{ t('admin_textos_de_la_web') }}</h2>
+    <p>{{ t('admin_edita_els_textos_i_desa_els_canvis') }}</p>
+    <p v-if="loading" role="status">{{ t('common_carregant_els_textos') }}</p>
     <p v-if="error" role="alert" class="admin-error">{{ error }}</p>
     <button
       v-if="!loading && !draft"
       class="button"
       type="button"
       @click="load"
-    >
-      Torna a carregar els textos
-    </button>
+    >{{ t('common_torna_a_carregar_els_textos') }}</button>
     <form v-if="draft" :aria-busy="saving" @submit.prevent="save">
       <fieldset
         v-for="group in groups"
-        :key="group.path"
+        :key="group.id"
         class="card content-group"
         :disabled="saving"
       >
@@ -191,7 +163,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
           :key="field.key"
           class="filter-field"
         >
-          <label :for="'content-' + field.key">{{ field.label }}</label>
+          <label :for="'content-' + field.key">{{ t(field.key).slice(0, 90) }} <code>{{ field.key }}</code></label>
           <textarea
             v-if="field.rows"
             :id="'content-' + field.key"
@@ -213,24 +185,23 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
             required
           />
           <p :id="'limit-' + field.key" class="admin-help">
-            Màxim {{ contentLimits[field.key] }} caràcters.
+            {{ t('editor_limit', { limit: contentLimits[field.key] }) }}
           </p>
         </div>
         <a :href="group.path" target="_blank" rel="noopener"
-          >Veure la pàgina
-          <span class="sr-only">(s’obre en una pestanya nova)</span> ↗</a
+          >{{ t('admin_veure_la_pagina') }}<span class="sr-only">{{ t('admin_s_obre_en_una_pestanya_nova') }}</span>{{ t('home_text_2') }}</a
         >
       </fieldset>
       <div class="content-save">
         <button class="button" type="submit" :disabled="saving || !dirty">
-          {{ saving ? 'Desant…' : 'Desa els canvis' }}
+          {{ saving ? t('admin_desant') : t('admin_desa_els_canvis') }}
         </button>
         <p role="status">
           {{
             saved
-              ? 'Canvis desats. Ja es poden veure a la web.'
+              ? t('admin_canvis_desats_ja_es_poden_veure_a')
               : dirty
-                ? 'Tens canvis sense desar.'
+                ? t('admin_tens_canvis_sense_desar')
                 : ''
           }}
         </p>

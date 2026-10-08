@@ -2,7 +2,12 @@
 
 Catálogo y textos conectados a Google Sheets mediante el servidor
 `GET /api/products`. La ruta devuelve únicamente el catálogo público normalizado.
-Los siete textos editables se leen de `Continguts` mediante `GET /api/content`.
+Todos los textos propios de la web y del panel se leen de `Continguts` mediante
+`GET /api/content`: 139 campos editables, además de los nombres, descripciones
+y categorías del catálogo en sus pestañas de productos. El inventario actual
+está en `types/content.ts`; el funcionamiento se explica en
+[Edición de todos los textos](docs/admin-content.md). Las secciones históricas
+de las fases 5–9 que siguen describen el esquema inicial de siete campos.
 
 Proyecto: `C:\WORKSPACE\la-circular`. Stack: Nuxt 3 y TypeScript.
 

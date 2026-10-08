@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 415, statusMessage: 'Expected JSON' })
   }
 
-  const maxBytes = 160 * 1024
+  const maxBytes = 2 * 1024 * 1024
   if (Number(getHeader(event, 'content-length')) > maxBytes) {
     throw createError({ statusCode: 413, statusMessage: 'Content too large' })
   }

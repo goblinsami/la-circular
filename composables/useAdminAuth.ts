@@ -10,6 +10,7 @@ import {
 import type { AdminUser } from '~/types/admin'
 
 export function useAdminAuth() {
+  const t = useSiteText()
   const user = useState<AdminUser | null>('admin-user', () => null)
   const ready = ref(false)
   const available = ref(false)
@@ -41,7 +42,7 @@ export function useAdminAuth() {
     try {
       const settings = await getSettings()
       if (!settings.disableSignup) {
-        error.value = "L'accés d'administració encara no està configurat."
+        error.value = t("admin_auth_message_1")
         return
       }
       available.value = true
@@ -60,13 +61,13 @@ export function useAdminAuth() {
           user.value = null
         } else {
           void getUser().catch(() => {
-            error.value = 'No hem pogut comprovar la sessió. Torna-ho a provar.'
+            error.value = t("admin_auth_message_2")
           })
         }
       })
     } catch {
       error.value =
-        "No podem connectar amb el servei d'accés. Torna-ho a provar més tard."
+        t("admin_auth_message_3")
     } finally {
       ready.value = true
     }
@@ -82,7 +83,7 @@ export function useAdminAuth() {
       return true
     } catch {
       error.value =
-        'No hem pogut iniciar la sessió. Comprova el correu i la contrasenya i torna-ho a provar.'
+        t("admin_auth_message_4")
       return false
     } finally {
       busy.value = false
@@ -104,7 +105,7 @@ export function useAdminAuth() {
       return true
     } catch {
       error.value =
-        "No hem pogut activar l'accés. Comprova la contrasenya o demana una nova invitació."
+        t("admin_auth_message_5")
       return false
     } finally {
       busy.value = false
@@ -119,7 +120,7 @@ export function useAdminAuth() {
       requestVersion++
       user.value = null
     } catch {
-      error.value = 'No hem pogut tancar la sessió. Torna-ho a provar.'
+      error.value = t("admin_auth_message_6")
     } finally {
       busy.value = false
     }

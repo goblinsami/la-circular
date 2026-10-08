@@ -179,5 +179,6 @@ export async function writeSiteContent(
     timeout: 10000,
     retry: false,
   })
-  if (data.totalUpdatedCells !== 7) throw new Error('Incomplete content update')
+  const expectedCells = body.data.reduce((total, update) => total + update.values[0]!.length, 0)
+  if (data.totalUpdatedCells !== expectedCells) throw new Error('Incomplete content update')
 }

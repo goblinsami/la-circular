@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 defineProps<{ status: 'idle' | 'pending' | 'success' | 'error' }>()
 defineEmits<{ retry: [] }>()
 </script>
@@ -9,14 +10,10 @@ defineEmits<{ retry: [] }>()
     class="content-status"
     role="status"
   >
-    <p>Carregant els textos…</p>
+    <p>{{ t('common_carregant_els_textos') }}</p>
   </div>
   <div v-else-if="status === 'error'" class="content-status" role="alert">
-    <p>
-      No hem pogut carregar els textos. Torna-ho a provar d’aquí a uns instants.
-    </p>
-    <button class="button" type="button" @click="$emit('retry')">
-      Torna a carregar els textos
-    </button>
+    <p>{{ t('common_no_hem_pogut_carregar_els_textos_torna') }}</p>
+    <button class="button" type="button" @click="$emit('retry')">{{ t('common_torna_a_carregar_els_textos') }}</button>
   </div>
 </template>

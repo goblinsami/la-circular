@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { contentKeys } from '../types/content.ts'
+import { contentKeys, legacyContentKeys } from '../types/content.ts'
 import {
   contentLimits,
   validateContentInput,
@@ -70,7 +70,7 @@ test('finds each key in reordered rows and changes only its value cell', () => {
   const content = validateContentInput(validContent())
   const update = prepareContentUpdate(rows, content)
   assert.equal(update.valueInputOption, 'RAW')
-  assert.equal(update.data.length, 7)
+  assert.equal(update.data.length, contentKeys.length)
   for (const [index, key] of contentKeys.entries()) {
     const rowNumber = rows.findIndex((row) => row[0] === key) + 1
     assert.deepEqual(update.data[index], {
@@ -101,11 +101,30 @@ test('refuses writes when the existing sheet has ambiguous or missing keys', () 
       content,
     ),
   )
-  assert.throws(() => prepareContentUpdate(validRows().slice(0, -1), content))
+  assert.throws(() => prepareContentUpdate(validRows().filter(row => row[0] !== 'home_title'), content))
   assert.throws(() =>
     prepareContentUpdate(
       [['wrong', 'headers'], ...validRows().slice(1)],
       content,
     ),
   )
+})
+
+test('migrates a seven-field sheet without overwriting unknown rows or existing values', () => {
+  const content = validateContentInput(validContent())
+  const rows = [['clau', 'valor'], ['internal_note', 'Preserve'], ...legacyContentKeys.map(key => [key, 'Existing'])]
+  const before = structuredClone(rows)
+  const update = prepareContentUpdate(rows, content)
+  const migrated = structuredClone(rows)
+  for (const cell of update.data) {
+    const match = /^'Continguts'!([AB])(\d+)(?::B\d+)?$/.exec(cell.range)!
+    const rowIndex = Number(match[2]) - 1
+    if (match[1] === 'A') migrated[rowIndex] = cell.values[0]!
+    else migrated[rowIndex]![1] = cell.values[0]![0]!
+  }
+  assert.deepEqual(rows, before)
+  assert.deepEqual(migrated[1], ['internal_note', 'Preserve'])
+  assert.equal(migrated.length, contentKeys.length + 2)
+  for (const key of contentKeys) assert.equal(migrated.find(row => row[0] === key)?.[1], content[key])
+  assert.ok(prepareContentUpdate(migrated, content).data.every(cell => cell.range.includes('!B')))
 })

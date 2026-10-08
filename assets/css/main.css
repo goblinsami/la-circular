@@ -1,14 +1,14 @@
 :root {
   color-scheme: light;
-  --color-paper: #f8f5ed;
-  --color-surface: #fffcf6;
-  --color-ink: #283d30;
-  --color-muted: #62695d;
-  --color-green: #34543b;
-  --color-green-hover: #243e2a;
-  --color-sage: #e6e9dc;
-  --color-line: #d4d9ca;
-  --color-clay: #82513c;
+  --color-paper: #fcefb4;
+  --color-surface: #fff9e6;
+  --color-ink: #49321f;
+  --color-muted: #705035;
+  --color-primary: #8b5e34;
+  --color-primary-hover: #704823;
+  --color-highlight: #fbe9a6;
+  --color-line: #d5b77b;
+  --color-clay: #8b5e34;
   --font-body: 'Segoe UI', Arial, sans-serif;
   --font-heading: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
   --space-1: 0.5rem;
@@ -89,7 +89,7 @@ em {
 }
 ::selection {
   color: var(--color-ink);
-  background: #dce2cd;
+  background: #fbe9a6;
 }
 :focus-visible {
   outline: 3px solid var(--color-clay);
@@ -145,7 +145,7 @@ main {
 .brand-mark {
   width: 2.4rem;
   height: 2.4rem;
-  border: 2px solid var(--color-green);
+  border: 2px solid var(--color-primary);
   border-radius: 50%;
   display: block;
   position: relative;
@@ -156,7 +156,7 @@ main {
   position: absolute;
   width: 0.8rem;
   height: 1.1rem;
-  border: 1.5px solid var(--color-green);
+  border: 1.5px solid var(--color-primary);
   border-radius: 80% 0 80% 0;
   top: 0.5rem;
   left: 0.6rem;
@@ -187,7 +187,7 @@ main {
 }
 .site-nav a:hover,
 .site-nav a[aria-current='page'] {
-  border-bottom-color: var(--color-green);
+  border-bottom-color: var(--color-primary);
 }
 .site-nav a[aria-current='page'] {
   font-weight: 600;
@@ -196,7 +196,7 @@ main {
   display: none;
 }
 .eyebrow {
-  color: var(--color-green);
+  color: var(--color-primary);
   font-size: 0.73rem;
   font-weight: 600;
   letter-spacing: 0.15em;
@@ -207,7 +207,7 @@ main {
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
-  background: var(--color-green);
+  background: var(--color-primary);
   border-radius: 50%;
   margin-right: 0.5rem;
   vertical-align: middle;
@@ -249,7 +249,7 @@ main {
   gap: 1.5rem;
   min-height: 3.25rem;
   padding: 0.8rem 1.25rem;
-  background: var(--color-green);
+  background: var(--color-primary);
   color: var(--color-surface);
   border-radius: 0.3rem;
   text-decoration: none;
@@ -257,7 +257,7 @@ main {
   line-height: 1.5;
 }
 .button:hover {
-  background: var(--color-green-hover);
+  background: var(--color-primary-hover);
 }
 .button span,
 .text-link span {
@@ -287,7 +287,7 @@ main {
   width: min(100%, 24rem);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--color-sage);
+  background: var(--color-highlight);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -308,7 +308,7 @@ main {
   position: absolute;
   width: 86%;
   aspect-ratio: 1;
-  border: 1px solid #bdc6ae;
+  border: 1px solid #d5b77b;
   border-radius: 50%;
   transform: rotate(-20deg) scaleY(0.82);
   z-index: -1;
@@ -319,7 +319,7 @@ main {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  background: #b88360;
+  background: #8b5e34;
   top: 12%;
   left: 15%;
 }
@@ -335,13 +335,13 @@ main {
   left: 50%;
   top: 0.5rem;
   height: 1.9rem;
-  border-left: 1px solid var(--color-green);
+  border-left: 1px solid var(--color-primary);
 }
 .art-sprout i {
   position: absolute;
   width: 1rem;
   height: 1.4rem;
-  background: var(--color-green);
+  background: var(--color-primary);
   border-radius: 90% 0 90% 0;
   top: 0;
   left: 50%;
@@ -396,8 +396,8 @@ main {
   margin-bottom: var(--space-5);
 }
 .content-section-loader {
-  --loader-base: #e6e9dc;
-  --loader-shine: #f8f5ed;
+  --loader-base: var(--color-highlight);
+  --loader-shine: var(--color-paper);
   display: grid;
   overflow: hidden;
 }
@@ -550,7 +550,7 @@ main {
 }
 .project-note {
   width: 100%;
-  background: var(--color-sage);
+  background: var(--color-highlight);
   border-color: transparent;
 }
 .project-note h2 {
@@ -669,7 +669,7 @@ main {
     min-height: 3rem;
   }
   .site-nav a[aria-current='page'] {
-    background: var(--color-sage);
+    background: var(--color-highlight);
     border-bottom-color: transparent;
     border-radius: 0.25rem;
   }
@@ -763,7 +763,7 @@ main {
   min-width: 0;
   min-height: 3rem;
   padding: 0.65rem 0.8rem;
-  border: 1px solid #858e7d;
+  border: 1px solid #8b5e34;
   border-radius: 0.3rem;
   background: var(--color-surface);
   color: var(--color-ink);
@@ -780,7 +780,7 @@ main {
   background: transparent;
 }
 .filter-reset:hover:not(:disabled) {
-  background: var(--color-sage);
+  background: var(--color-highlight);
 }
 .filter-reset:disabled {
   color: var(--color-muted);
@@ -813,7 +813,7 @@ main {
   aspect-ratio: 4 / 3;
   margin: 0 0 var(--space-3);
   overflow: hidden;
-  background: var(--color-sage);
+  background: var(--color-highlight);
 }
 .product-image {
   width: 100%;
@@ -826,7 +826,7 @@ main {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-green);
+  color: var(--color-primary);
 }
 .product-card h2 {
   font-size: 1.65rem;
@@ -988,7 +988,7 @@ main {
   width: 100%;
   min-height: 2.75rem;
   padding: 0.55rem 0.7rem;
-  border: 1px solid #858e7d;
+  border: 1px solid #8b5e34;
   border-radius: 0.3rem;
   background: var(--color-surface);
   color: var(--color-ink);
@@ -1000,7 +1000,7 @@ main {
   min-height: 12rem;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--color-sage);
+  background: var(--color-highlight);
 }
 .admin-image-preview img {
   width: 100%;
@@ -1013,12 +1013,12 @@ main {
   gap: var(--space-2);
 }
 .admin-section .button-secondary {
-  border: 1px solid var(--color-green);
+  border: 1px solid var(--color-primary);
   background: transparent;
-  color: var(--color-green);
+  color: var(--color-primary);
 }
 .admin-section .button-secondary:hover {
-  background: var(--color-sage);
+  background: var(--color-highlight);
 }
 .content-group {
   min-width: 0;
@@ -1037,7 +1037,7 @@ main {
   width: 100%;
   min-width: 0;
   padding: 0.65rem 0.8rem;
-  border: 1px solid #858e7d;
+  border: 1px solid #8b5e34;
   border-radius: 0.3rem;
   background: var(--color-surface);
   color: var(--color-ink);

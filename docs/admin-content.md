@@ -1,93 +1,84 @@
-# Fase 9: edición de textos
+# Edición de todos los textos
 
-Panel: https://la-circular.netlify.app/admin
+El panel `/admin` y la pestaña `Continguts` de Google Sheets comparten el inventario
+de `types/content.ts`: 139 campos para los textos propios de la web y del panel.
+Incluye títulos, párrafos, marca, navegación, menú móvil, pie, botones, tarjetas,
+ilustración de inicio, filtros, contadores, estados vacíos, errores, confirmaciones,
+mensajes administrativos, título del navegador y textos de accesibilidad.
 
-El editor permite modificar los siete textos previstos, agrupados en Inicio,
-El nostre projecte y Productes. No permite editar productos, crear páginas
-ni cambiar la estructura de la web.
+Los nombres y descripciones de productos se editan en sus pestañas de catálogo.
+La categoría es el nombre de la pestaña. El correo de la sesión es un dato de
+Identity. Los mensajes y controles nativos del navegador (validación de formularios,
+selector de archivos y aviso de cierre) dependen del navegador y su idioma.
 
-## Permiso necesario
+## Panel
 
-En el Sheet, cambiar el permiso de la cuenta
-`la-circular-web@la-circular.iam.gserviceaccount.com` de Lector a **Editor**.
-Mantener el acceso general restringido. Se ha solicitado este cambio al propietario;
-queda pendiente su confirmación y un guardado desde la sesión real.
+1. Iniciar sesión con la cuenta invitada en `/admin`.
+2. Buscar el texto en su grupo: inicio, proyecto, productos, cabecera, pie,
+   accesibilidad/mensajes o administración. Cada campo muestra su texto actual
+   y su clave estable para localizarlo también en el Excel.
+3. Editar y pulsar **Desa els canvis**. Los textos se guardan juntos.
+4. Esperar la confirmación y revisar la página. Los textos compartidos de la
+   sesión actual se actualizan al guardar; al recargar se leen de Sheets.
 
-La clave y el ID del Sheet ya están configurados de forma privada en Netlify.
-Las lecturas públicas siguen usando el alcance de solo lectura. Solo el guardado
-administrativo solicita el alcance de escritura de Google Sheets.
+Si falla el guardado se conserva el borrador. El panel avisa antes de salir con
+cambios pendientes. Los textos son planos: ni HTML ni fórmulas se ejecutan.
+Se admiten saltos de línea y se recortan los espacios exteriores.
 
-## Uso
+## Compatibilidad con el Excel existente
 
-1. Entrar al panel con la cuenta invitada.
-2. Modificar los textos deseados.
-3. Pulsar **Desa els canvis**. El botón se habilita cuando hay cambios.
-4. Esperar el mensaje **Canvis desats. Ja es poden veure a la web.**
-5. Abrir la página correspondiente para comprobar el resultado.
+Se mantienen los encabezados `clau` y `valor` y las siete claves originales.
+Si faltan las nuevas claves se muestran sus valores iniciales sin romper la web.
+Al guardar desde el panel se añaden las claves nuevas al final de `Continguts`
+en la misma operación que actualiza las existentes. No se modifican otras filas
+ni las pestañas de productos. Reordenar las filas no cambia su significado.
+Las claves duplicadas y los valores vacíos se rechazan antes de escribir.
 
-El guardado publica los siete campos juntos. Los saltos de línea se conservan;
-los espacios al principio y al final se eliminan. Todos los campos son obligatorios.
-Los límites son 200 caracteres por título, 500 en el subtítulo, 10.000 en el texto
-de inicio, 20.000 en el proyecto y 2.000 en la introducción del catálogo.
+La cuenta de servicio necesita permiso **Editor** sobre el Sheet para guardar.
+Las lecturas públicas usan alcance de solo lectura. El esquema funciona tanto
+con edición directa del Excel como con el panel; no existe una segunda fuente
+de textos que haya que mantener sincronizada.
 
-Si falla el guardado, el formulario conserva los cambios para reintentar.
-No se afirma que un guardado haya terminado si Google no lo confirma.
-El panel avisa antes de navegar, recargar o cerrar sesión con cambios sin guardar.
-Evitar editar simultáneamente desde varias ventanas: prevalece el último guardado.
+Los textos compartidos tienen una sola clave: por ejemplo la marca en la cabecera
+y el pie, y los botones repetidos para reintentar. Cambiarla actualiza sus usos.
 
-## Servidor
+## Variables dentro de los textos
 
-- `GET /api/admin/content`: lectura de los siete valores, con sesión verificada.
-- `POST /api/admin/content`: recibe un objeto JSON con exactamente las siete
-  claves y valores de texto.
-- El middleware de Identity exige sesión y modo Invite only. Las escrituras
-  también requieren el mismo origen; sin sesión se devuelve 401, y con un
-  origen no permitido, 403.
-- Los datos inválidos devuelven 400; un cuerpo de más de 160 KiB, 413; un tipo
-  de contenido distinto de JSON, 415. Los fallos de Google se devuelven como
-  502 sin incluir credenciales ni respuestas internas.
-- La escritura busca las filas por sus claves actuales y actualiza únicamente
-  sus siete celdas B en `Continguts`. No cambia encabezados, claves, otras filas
-  ni pestañas de productos. Si faltan claves o hay duplicados, no escribe.
-- `values:batchUpdate` utiliza `valueInputOption: RAW`: texto que empieza por
-  `=` sigue siendo texto, y el HTML tampoco se interpreta en la web.
-- Tras guardar, se invalida la carga compartida de textos de Nuxt para que la
-  navegación pública muestre los nuevos valores.
+Conservar los marcadores cuando deba mostrarse el dato correspondiente:
 
-## Archivos
+| Texto | Marcadores |
+| --- | --- |
+| Contadores del catálogo | `{count}`, `{total}` |
+| Descripción accesible de imágenes | `{name}` |
+| Selector de productos en administración | `{name}`, `{category}` |
+| Ayuda de longitud de los campos | `{limit}` |
 
-- `components/AdminContentEditor.vue`: formulario y estados.
-- `utils/content-validation.ts`: límites y validación de los siete campos.
-- `server/utils/content-update.ts`: selección de las celdas por clave.
-- `server/utils/google-sheets.ts`: lectura y guardado autenticados en Google.
-- `tests/content-update.test.ts`: validación, claves reordenadas, texto literal
-  y conservación de celdas ajenas.
+Las variantes singular/plural y filtrado/sin filtrar tienen claves independientes.
+La sustitución conserva literalmente los nombres, incluso si incluyen HTML,
+símbolos o llaves. Vue escapa el resultado al mostrarlo.
+
+## Servidor y límites
+
+- `GET /api/content`: inventario de textos público, sin filas ajenas.
+- `GET /api/admin/content`: mismo inventario con sesión verificada.
+- `POST /api/admin/content`: exige exactamente todas las claves del inventario,
+  sesión verificada, origen permitido y JSON válido.
+- Los límites de cada campo se definen junto a su clave en `types/content.ts`.
+  El cuerpo máximo es 2 MiB, suficiente incluso con todos los campos al máximo
+  y caracteres escapados en JSON.
+- Sheets usa `valueInputOption: RAW`. Se comprueba el número de celdas actualizado,
+  incluyendo la columna A de las claves añadidas, antes de confirmar el guardado.
 
 ## Verificación
 
-Han pasado los 27 tests y TypeScript. La compilación y las pruebas de navegador
-usan el código real del servidor, con Identity y Sheets simulados de forma aislada:
-guardado autenticado, respuestas 401/403/400/413/415/502, fallo sin perder el borrador,
-actualización pública, recarga y avisos de salida. Responsive y accesibilidad
-automática comprobados a 320, 390 y 1440 píxeles.
+Las pruebas revisan todos los componentes, páginas y layouts para detectar textos
+literales, atributos accesibles fijos y referencias a claves inexistentes. También
+comprueban límites, variables, compatibilidad con la hoja antigua y migración sin
+modificar filas ajenas. `npm test` ejecuta estas comprobaciones.
 
-En Netlify real se han verificado GET y POST administrativos con respuesta 401 ante sesiones ausentes o falsas, y las páginas públicas siguen funcionando. Estas pruebas no han escrito en el Sheet real ni creado accesos de prueba en producción.
-Las pruebas de navegador aisladas no forman parte del despliegue. La regresión del adaptador de Netlify se conserva en tests/netlify-content.test.mjs; tampoco se incluye en las funciones publicadas.
-
-Para cerrar la fase, falta cambiar un texto desde la sesión real, guardarlo,
-verlo en la página pública y confirmar que permanece al recargar el panel.
-Después se espera confirmación antes de pasar a Cloudinary.
-
-## Regresión del guardado en Netlify (07/10/2026)
-
-La comprobación de origen debe leer solo URL y cabeceras. Convertir el evento
-completo con `toWebRequest(event)` consumía su cuerpo en el adaptador de Netlify:
-una petición JSON válida terminaba rechazada como contenido vacío. La comprobación
-actual construye una Request sin cuerpo y conserva la protección de origen.
-Se ha reproducido el rechazo con la versión anterior y el guardado correcto con
-la versión corregida, sin escribir en el Sheet real.
-
-Para ejecutar la regresión usando el mismo adaptador que producción:
+La regresión de Netlify usa el adaptador real con Identity y Sheets simulados,
+sin escrituras en el documento real. Comprueba autenticación, protección de origen,
+guardado, recarga, migración y renderizado de los nuevos textos en la página pública:
 
 ```powershell
 $env:NITRO_PRESET = 'netlify'
@@ -96,8 +87,5 @@ npm run test:netlify
 Remove-Item Env:NITRO_PRESET
 ```
 
-La prueba utiliza Identity y Sheets simulados, rechaza cualquier otra llamada
-externa y comprueba POST con/sin Content-Length, lectura autenticada, 401, 403
-y errores de formato, campos y tamaño. Los mensajes del panel distinguen estos
-errores. Sigue pendiente confirmar un guardado desde la sesión real del usuario;
-la edición directa del Sheet solo verifica la lectura pública.
+Esta actualización del código no despliega la web ni modifica el Excel real.
+Las nuevas filas se crean cuando se guarden los textos desde el panel actualizado.

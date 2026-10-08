@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 const {
   user,
   isAuthenticated,
@@ -21,25 +22,25 @@ async function signOut() {
   if (editorState.value.saving) return
   if (
     editorState.value.dirty &&
-    !window.confirm('Tens canvis sense desar. Vols tancar la sessió igualment?')
+    !window.confirm(t('admin_tens_canvis_sense_desar_vols_tancar_la'))
   )
     return
   await logout()
 }
 
-useHead({
-  title: 'Administració · La Circular',
+useHead(() => ({
+  title: t('admin_administracio_la_circular'),
   meta: [
     { name: 'robots', content: 'noindex, nofollow' },
     { name: 'referrer', content: 'no-referrer' },
   ],
-})
+}))
 
 onMounted(initialize)
 
 async function submit() {
   if (hasInvite.value && password.value !== confirmation.value) {
-    error.value = 'Les contrasenyes no coincideixen.'
+    error.value = t('admin_les_contrasenyes_no_coincideixen')
     return
   }
   const success = hasInvite.value
@@ -58,23 +59,23 @@ async function submit() {
       :class="{ 'admin-section-wide': isAuthenticated }"
       aria-labelledby="admin-title"
     >
-      <p class="eyebrow">La Circular</p>
-      <h1 id="admin-title">Administració</h1>
-      <p v-if="!ready" role="status">Comprovant l'accés…</p>
+      <p class="eyebrow">{{ t('header_la_circular') }}</p>
+      <h1 id="admin-title">{{ t('admin_administracio') }}</h1>
+      <p v-if="!ready" role="status">{{ t('admin_comprovant_l_acces') }}</p>
       <template v-else>
         <p v-if="error" role="alert" class="admin-error">{{ error }}</p>
         <template v-if="isAuthenticated && !hasInvite"
           ><div class="card admin-panel">
-            <h2>Sessió iniciada</h2>
+            <h2>{{ t('admin_sessio_iniciada') }}</h2>
             <p class="admin-email">{{ user?.email }}</p>
-            <p>Benvingut a l'espai d'administració de La Circular.</p>
+            <p>{{ t('admin_benvingut_a_l_espai_d_administracio_de') }}</p>
             <button
               class="button"
               type="button"
               :disabled="busy || editorState.saving"
               @click="signOut"
             >
-              {{ busy ? 'Tancant la sessió…' : 'Tanca la sessió' }}
+              {{ busy ? t('admin_tancant_la_sessio') : t('admin_tanca_la_sessio') }}
             </button>
           </div>
           <AdminContentEditor @state="editorState = $event" />
@@ -84,8 +85,8 @@ async function submit() {
           <p class="lead">
             {{
               hasInvite
-                ? 'Activa el teu accés amb una contrasenya.'
-                : 'Accés reservat a les persones convidades.'
+                ? t('admin_activa_el_teu_acces_amb_una_contrasenya')
+                : t('admin_acces_reservat_a_les_persones_convidades')
             }}
           </p>
           <form
@@ -94,7 +95,7 @@ async function submit() {
             @submit.prevent="submit"
           >
             <div v-if="!hasInvite" class="filter-field">
-              <label for="admin-email">Correu electrònic</label>
+              <label for="admin-email">{{ t('admin_correu_electronic') }}</label>
               <input
                 id="admin-email"
                 v-model="email"
@@ -107,7 +108,7 @@ async function submit() {
             </div>
             <div class="filter-field">
               <label for="admin-password">{{
-                hasInvite ? 'Crea una contrasenya' : 'Contrasenya'
+                hasInvite ? t('admin_crea_una_contrasenya') : t('admin_password')
               }}</label>
               <input
                 id="admin-password"
@@ -120,12 +121,10 @@ async function submit() {
                 :disabled="busy"
                 :aria-describedby="hasInvite ? 'password-help' : undefined"
               />
-              <p v-if="hasInvite" id="password-help" class="admin-help">
-                Fes servir almenys 8 caràcters.
-              </p>
+              <p v-if="hasInvite" id="password-help" class="admin-help">{{ t('admin_fes_servir_almenys_8_caracters') }}</p>
             </div>
             <div v-if="hasInvite" class="filter-field">
-              <label for="admin-confirmation">Repeteix la contrasenya</label>
+              <label for="admin-confirmation">{{ t('admin_repeteix_la_contrasenya') }}</label>
               <input
                 id="admin-confirmation"
                 v-model="confirmation"
@@ -139,10 +138,10 @@ async function submit() {
             <button class="button" type="submit" :disabled="busy">
               {{
                 busy
-                  ? 'Un moment…'
+                  ? t('admin_un_moment')
                   : hasInvite
-                    ? "Activa l'accés"
-                    : 'Inicia la sessió'
+                    ? t('admin_activa_l_acces')
+                    : t('admin_inicia_la_sessio')
               }}
             </button>
           </form>
@@ -152,11 +151,9 @@ async function submit() {
           class="button"
           type="button"
           @click="ready && initialize()"
-        >
-          Torna-ho a provar
-        </button>
+        >{{ t('products_torna_ho_a_provar') }}</button>
       </template>
-      <NuxtLink class="admin-back" to="/">Torna a la web</NuxtLink>
+      <NuxtLink class="admin-back" to="/">{{ t('admin_torna_a_la_web') }}</NuxtLink>
     </section>
   </div>
 </template>

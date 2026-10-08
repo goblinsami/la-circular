@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { test } from 'node:test'
+import { contentKeys, legacyContentKeys, defaultSiteContent } from '../types/content.ts'
 
 // Run after building with NITRO_PRESET=netlify. Test doubles never reach Google
 // or Identity: only the actual compiled Netlify adapter and routes execute.
@@ -13,15 +14,7 @@ test('Netlify adapter preserves the POST body through authentication and CSRF', 
   const { JWT } = require('google-auth-library')
   const requestContext = new AsyncLocalStorage()
   const origin = 'https://la-circular.netlify.app'
-  const keys = [
-    'home_title',
-    'home_subtitle',
-    'home_text',
-    'project_title',
-    'project_content',
-    'products_title',
-    'products_intro',
-  ]
+  const keys = contentKeys
   const content = Object.fromEntries(keys.map((key) => [key, 'Text de ' + key]))
   content.home_text = 'Alimentació i benestar.\n\nSegon paràgraf.'
   let rows = [['clau', 'valor'], ['other', 'Keep'], ...Object.entries(content)]
@@ -77,16 +70,24 @@ test('Netlify adapter preserves the POST body through authentication and CSRF', 
     )
     if (options.method === 'POST') {
       assert.equal(options.data.valueInputOption, 'RAW')
-      assert.equal(options.data.data.length, 7)
+      assert.equal(options.data.data.length, keys.length)
+      let updatedCells = 0
       for (const cell of options.data.data) {
-        const match = /^'Continguts'!B(\d+)$/.exec(cell.range)
+        const match = /^'Continguts'!([AB])(\d+)(?::B\d+)?$/.exec(cell.range)
         assert.ok(match)
-        const index = Number(match[1]) - 1
-        assert.ok(keys.includes(rows[index][0]))
-        rows[index][1] = cell.values[0][0]
+        const index = Number(match[2]) - 1
+        if (match[1] === 'A') {
+          assert.equal(rows[index], undefined)
+          assert.ok(keys.includes(cell.values[0][0]))
+          rows[index] = [...cell.values[0]]
+        } else {
+          assert.ok(keys.includes(rows[index][0]))
+          rows[index][1] = cell.values[0][0]
+        }
+        updatedCells += cell.values[0].length
       }
       writes++
-      return { data: { totalUpdatedCells: 7 } }
+      return { data: { totalUpdatedCells: updatedCells } }
     }
     return { data: { values: structuredClone(rows) } }
   }
@@ -178,10 +179,33 @@ test('Netlify adapter preserves the POST body through authentication and CSRF', 
         assert.equal(fields.status, 400)
         assert.equal((await fields.json()).data.code, 'INVALID_CONTENT')
         assert.equal((await call({ type: 'text/plain' })).status, 415)
-        assert.equal((await call({ body: 'x'.repeat(170000) })).status, 413)
+        assert.equal((await call({ body: 'x'.repeat(2 * 1024 * 1024 + 1) })).status, 413)
         assert.equal(writes, 2)
       },
     )
+    await t.test('public page renders configurable header, artwork, cards and footer', async () => {
+      const response = await call({ method: 'GET', path: '/', cookie: '' })
+      assert.equal(response.status, 200)
+      const html = await response.text()
+      for (const key of ['header_la_circular', 'header_dietetica_de_barri', 'header_inici', 'home_benestar_amb_proximitat', 'home_cuidar_nos_de_manera_natural', 'home_descobreix_els_productes', 'home_les_persones_al_centre', 'home_triar_amb_calma', 'footer_a_prop_teu_cada_dia']) {
+        assert.ok(html.includes(content[key]), 'Missing rendered text: ' + key)
+      }
+    })
+    await t.test('first admin save extends the legacy sheet and remains readable after reload', async () => {
+      rows = [['clau', 'valor'], ['other', 'Keep'], ...legacyContentKeys.map(key => [key, content[key]])]
+      const legacyResponse = await call({ method: 'GET' })
+      assert.equal(legacyResponse.status, 200)
+      const loaded = await legacyResponse.json()
+      assert.equal(loaded.header_close_menu, defaultSiteContent.header_close_menu)
+      assert.equal(loaded.home_title, content.home_title)
+      const response = await call()
+      assert.equal(response.status, 200)
+      assert.deepEqual(await response.json(), content)
+      assert.deepEqual(rows[1], ['other', 'Keep'])
+      assert.equal(rows.length, keys.length + 2)
+      assert.deepEqual(await (await call({ method: 'GET' })).json(), content)
+      assert.deepEqual(await (await call({ method: 'GET', path: '/api/content', cookie: '' })).json(), content)
+    })
   } finally {
     globalThis.fetch = originalFetch
     globalThis.Netlify = originalNetlify

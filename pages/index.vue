@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 import { fallbackSiteContent } from '~/composables/useSiteContent'
 
 const {
@@ -22,9 +23,7 @@ const displayedContent = computed(() =>
     <section v-else class="hero" aria-labelledby="home-title">
       <div class="hero-copy">
         <p class="eyebrow">
-          <span class="small-dot" aria-hidden="true"></span> Benestar, amb
-          proximitat
-        </p>
+          <span class="small-dot" aria-hidden="true"></span>{{ t('home_benestar_amb_proximitat') }}</p>
         <h1 id="home-title" class="editable-title">
           {{ displayedContent.home_title }}
         </h1>
@@ -41,51 +40,45 @@ const displayedContent = computed(() =>
         </p>
         <div class="hero-actions">
           <NuxtLink class="button" to="/productes"
-            >Descobreix els productes
-            <span aria-hidden="true">↗</span></NuxtLink
+            >{{ t('home_descobreix_els_productes') }}<span aria-hidden="true">{{ t('home_text_2') }}</span></NuxtLink
           >
           <NuxtLink class="text-link" to="/el-nostre-projecte"
-            >El nostre projecte <span aria-hidden="true">→</span></NuxtLink
+            >{{ t('home_el_nostre_projecte') }}<span aria-hidden="true">{{ t('home_text_3') }}</span></NuxtLink
           >
         </div>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="art-orbit"></div>
         <div class="art-circle">
-          <span class="art-caption">LA CIRCULAR</span>
-          <p>Cuidar-nos.<br />De manera<br /><em>natural.</em></p>
+          <span class="art-caption">{{ t('home_la_circular') }}</span>
+          <p class="editable-text">{{ t('home_cuidar_nos_de_manera_natural') }}</p>
           <span class="art-sprout"><i></i><i></i></span>
-          <span class="art-caption">A PROP TEU</span>
+          <span class="art-caption">{{ t('home_a_prop_teu') }}</span>
         </div>
-        <span class="art-note">Les petites coses de cada dia.</span>
+        <span class="art-note">{{ t('home_les_petites_coses_de_cada_dia') }}</span>
       </div>
     </section>
 
     <section class="values-section" aria-labelledby="values-title">
       <div class="section-heading">
-        <p class="eyebrow">La nostra manera de fer</p>
-        <h2 id="values-title">Les persones, al centre.</h2>
+        <p class="eyebrow">{{ t('home_la_nostra_manera_de_fer') }}</p>
+        <h2 id="values-title">{{ t('home_les_persones_al_centre') }}</h2>
       </div>
       <div class="card-grid">
         <article class="card">
-          <span class="card-number" aria-hidden="true">01 /</span>
-          <h3>A prop teu</h3>
-          <p>
-            Una botiga de barri, amb temps per escoltar-te i un tracte de tu a
-            tu.
-          </p>
+          <span class="card-number" aria-hidden="true">{{ t('home_01') }}</span>
+          <h3>{{ t('home_a_prop_teu_2') }}</h3>
+          <p>{{ t('home_una_botiga_de_barri_amb_temps_per') }}</p>
         </article>
         <article class="card">
-          <span class="card-number" aria-hidden="true">02 /</span>
-          <h3>Cuidar el dia a dia</h3>
-          <p>
-            Opcions d’alimentació i cura personal que encaixen amb la teva vida.
-          </p>
+          <span class="card-number" aria-hidden="true">{{ t('home_02') }}</span>
+          <h3>{{ t('home_cuidar_el_dia_a_dia') }}</h3>
+          <p>{{ t('home_opcions_d_alimentacio_i_cura_personal_que') }}</p>
         </article>
         <article class="card">
-          <span class="card-number" aria-hidden="true">03 /</span>
-          <h3>Triar amb calma</h3>
-          <p>Un espai on compartir dubtes i descobrir allò que necessites.</p>
+          <span class="card-number" aria-hidden="true">{{ t('home_03') }}</span>
+          <h3>{{ t('home_triar_amb_calma') }}</h3>
+          <p>{{ t('home_un_espai_on_compartir_dubtes_i_descobrir') }}</p>
         </article>
       </div>
     </section>

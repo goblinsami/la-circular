@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 import type { Product } from '~/types/product'
 
 defineProps<{ product: Product }>()
@@ -14,7 +15,7 @@ const priceFormatter = new Intl.NumberFormat('ca-ES', {
     <figure v-if="product.imatge" class="product-image-frame">
       <img
         :src="product.imatge"
-        :alt="'Imatge de ' + product.nom"
+        :alt="t('products_image_alt', { name: product.nom })"
         class="product-image"
         loading="lazy"
         decoding="async"

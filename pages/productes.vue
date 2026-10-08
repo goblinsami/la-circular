@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 import type { Product } from '~/types/product'
 import { fallbackSiteContent } from '~/composables/useSiteContent'
 import { getVisibleProducts } from '~/utils/products'
@@ -54,7 +55,7 @@ function resetFilters() {
     <section aria-labelledby="products-title" :aria-busy="loading">
       <ContentSectionLoader v-if="contentLoading" variant="products" />
       <div v-else class="page-heading">
-        <p class="eyebrow">La nostra selecció</p>
+        <p class="eyebrow">{{ t('products_la_nostra_seleccio') }}</p>
         <h1 id="products-title" class="editable-title">
           <em>{{ displayedContent.products_title }}</em>
         </h1>
@@ -69,51 +70,47 @@ function resetFilters() {
       </div>
 
       <div v-if="loading" class="card catalogue-status" role="status">
-        <p>Carregant els productes…</p>
+        <p>{{ t('products_carregant_els_productes') }}</p>
       </div>
       <div v-else-if="error" class="card catalogue-status" role="alert">
-        <h2>No hem pogut carregar el catàleg</h2>
-        <p>Torna-ho a provar d’aquí a uns instants.</p>
-        <button class="button" type="button" @click="refresh()">
-          Torna-ho a provar
-        </button>
+        <h2>{{ t('products_no_hem_pogut_carregar_el_cataleg') }}</h2>
+        <p>{{ t('products_torna_ho_a_provar_d_aqui_a') }}</p>
+        <button class="button" type="button" @click="refresh()">{{ t('products_torna_ho_a_provar') }}</button>
       </div>
       <template v-else>
         <form
           class="catalogue-filters"
           role="search"
-          aria-label="Cerca al catàleg"
+          :aria-label="t('products_cerca_al_cataleg')"
           @submit.prevent
           @reset.prevent="resetFilters"
         >
           <div class="filter-field">
-            <label for="product-search">Cerca per nom</label>
+            <label for="product-search">{{ t('products_cerca_per_nom') }}</label>
             <input
               id="product-search"
               ref="searchInput"
               v-model="search"
               type="search"
-              placeholder="Per exemple, camamilla"
+              :placeholder="t('products_per_exemple_camamilla')"
               autocomplete="off"
               aria-controls="product-results"
             />
           </div>
           <div class="filter-field">
-            <label for="product-category">Categoria</label>
+            <label for="product-category">{{ t('products_categoria') }}</label>
             <select
               id="product-category"
               v-model="category"
               aria-controls="product-results"
             >
-              <option value="">Totes les categories</option>
+              <option value="">{{ t('products_totes_les_categories') }}</option>
               <option v-for="name in categories" :key="name" :value="name">
                 {{ name }}
               </option>
             </select>
           </div>
-          <button class="filter-reset" type="reset" :disabled="!hasFilters">
-            Neteja els filtres
-          </button>
+          <button class="filter-reset" type="reset" :disabled="!hasFilters">{{ t('products_neteja_els_filtres') }}</button>
         </form>
 
         <p
@@ -122,16 +119,14 @@ function resetFilters() {
           aria-live="polite"
           aria-atomic="true"
         >
-          {{ products.length }}
-          {{ products.length === 1 ? 'producte' : 'productes' }}
-          <span v-if="hasFilters">de {{ activeProducts.length }}</span>
+          {{ t(hasFilters ? (products.length === 1 ? 'products_count_filtered_one' : 'products_count_filtered_many') : (products.length === 1 ? 'products_count_one' : 'products_count_many'), { count: products.length, total: activeProducts.length }) }}
         </p>
 
         <div id="product-results">
           <ul
             v-if="products.length"
             class="product-grid"
-            aria-label="Productes"
+            :aria-label="t('products_productes')"
           >
             <li v-for="product in products" :key="product.id">
               <ProductCard :product="product" />
@@ -141,15 +136,15 @@ function resetFilters() {
             <h2>
               {{
                 hasFilters
-                  ? 'No hem trobat cap producte'
-                  : 'Encara no hi ha productes disponibles'
+                  ? t('products_no_hem_trobat_cap_producte')
+                  : t('products_encara_no_hi_ha_productes_disponibles')
               }}
             </h2>
             <p>
               {{
                 hasFilters
-                  ? 'Prova amb un altre nom o categoria, o neteja els filtres.'
-                  : 'Torna a visitar el catàleg més endavant.'
+                  ? t('products_prova_amb_un_altre_nom_o_categoria')
+                  : t('products_torna_a_visitar_el_cataleg_mes_endavant')
               }}
             </p>
           </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 import type { AdminProduct } from '~/server/utils/product-normalization'
 
 const products = ref<AdminProduct[]>([])
@@ -22,7 +23,7 @@ async function loadProducts() {
       selectedId.value = products.value[0]?.id ?? ''
     }
   } catch {
-    error.value = 'No hem pogut carregar els productes. Torna-ho a provar.'
+    error.value = t('admin_no_hem_pogut_carregar_els_productes_torna')
   } finally {
     loading.value = false
   }
@@ -44,16 +45,16 @@ async function upload() {
       retry: 0,
     })
     selectedProduct.value.imatge = result.imatge
-    status.value = 'Imatge desada i associada al producte.'
+    status.value = t('admin_imatge_desada_i_associada_al_producte')
     if (fileInput.value) fileInput.value.value = ''
   } catch (cause) {
     const code = (cause as { statusCode?: number }).statusCode
     error.value =
       code === 413
-        ? 'La imatge supera el límit de 5 MB.'
+        ? t('admin_la_imatge_supera_el_limit_de_5')
         : code === 415
-          ? 'Fes servir una imatge JPG, PNG o WebP.'
-          : 'No hem pogut desar la imatge. Comprova la sessió i torna-ho a provar.'
+          ? t('admin_fes_servir_una_imatge_jpg_png_o')
+          : t('admin_no_hem_pogut_desar_la_imatge_comprova')
   } finally {
     busy.value = false
   }
@@ -61,7 +62,7 @@ async function upload() {
 
 async function removeImage() {
   if (!selectedProduct.value?.imatge || busy.value) return
-  if (!window.confirm('Vols eliminar la imatge d’aquest producte?')) return
+  if (!window.confirm(t('admin_vols_eliminar_la_imatge_d_aquest_producte'))) return
   error.value = ''
   status.value = ''
   busy.value = true
@@ -72,9 +73,9 @@ async function removeImage() {
       retry: 0,
     })
     selectedProduct.value.imatge = null
-    status.value = 'Imatge eliminada del producte.'
+    status.value = t('admin_imatge_eliminada_del_producte')
   } catch {
-    error.value = 'No hem pogut eliminar la imatge. Torna-ho a provar.'
+    error.value = t('admin_no_hem_pogut_eliminar_la_imatge_torna')
   } finally {
     busy.value = false
   }
@@ -91,37 +92,35 @@ onMounted(loadProducts)
 
 <template>
   <section class="admin-image-editor" aria-labelledby="image-editor-title">
-    <h2 id="image-editor-title">Imatges dels productes</h2>
-    <p v-if="loading" role="status">Carregant els productes…</p>
+    <h2 id="image-editor-title">{{ t('admin_imatges_dels_productes') }}</h2>
+    <p v-if="loading" role="status">{{ t('products_carregant_els_productes') }}</p>
     <p v-if="error" role="alert" class="admin-error">{{ error }}</p>
     <button
       v-if="!loading && !products.length"
       class="button"
       type="button"
       @click="loadProducts"
-    >
-      Torna-ho a provar
-    </button>
+    >{{ t('products_torna_ho_a_provar') }}</button>
     <div v-if="!loading && products.length" class="image-editor-controls">
       <div class="filter-field">
-        <label for="image-product">Producte</label>
+        <label for="image-product">{{ t('admin_producte') }}</label>
         <select id="image-product" v-model="selectedId" :disabled="busy">
           <option v-for="product in products" :key="product.id" :value="product.id">
-            {{ product.nom }} · {{ product.categoria }}{{ product.actiu ? '' : ' · Inactiu' }}
+            {{ t(product.actiu ? 'admin_product_option' : 'admin_product_option_inactive', { name: product.nom, category: product.categoria }) }}
           </option>
         </select>
       </div>
       <div v-if="selectedProduct?.imatge" class="admin-image-preview">
         <img
           :src="selectedProduct.imatge"
-          :alt="'Imatge actual de ' + selectedProduct.nom"
+          :alt="t('admin_image_alt', { name: selectedProduct.nom })"
           loading="lazy"
         />
       </div>
-      <p v-else class="admin-help">Aquest producte encara no té imatge.</p>
+      <p v-else class="admin-help">{{ t('admin_aquest_producte_encara_no_te_imatge') }}</p>
       <form class="image-upload-form" :aria-busy="busy" @submit.prevent="upload">
         <div class="filter-field">
-          <label for="product-image-file">Selecciona una imatge</label>
+          <label for="product-image-file">{{ t('admin_selecciona_una_imatge') }}</label>
           <input
             id="product-image-file"
             ref="fileInput"
@@ -130,11 +129,11 @@ onMounted(loadProducts)
             :disabled="busy"
             required
           />
-          <p class="admin-help">JPG, PNG o WebP · màxim 5 MB</p>
+          <p class="admin-help">{{ t('admin_jpg_png_o_webp_maxim_5_mb') }}</p>
         </div>
         <div class="image-editor-actions">
           <button class="button" type="submit" :disabled="busy || !selectedProduct">
-            {{ busy ? 'Desant…' : selectedProduct?.imatge ? 'Canvia la imatge' : 'Afegeix la imatge' }}
+            {{ busy ? t('admin_desant') : selectedProduct?.imatge ? t('admin_canvia_la_imatge') : t('admin_afegeix_la_imatge') }}
           </button>
           <button
             v-if="selectedProduct?.imatge"
@@ -142,9 +141,7 @@ onMounted(loadProducts)
             type="button"
             :disabled="busy"
             @click="removeImage"
-          >
-            Elimina la imatge
-          </button>
+          >{{ t('admin_elimina_la_imatge') }}</button>
         </div>
       </form>
       <p v-if="status" role="status">{{ status }}</p>

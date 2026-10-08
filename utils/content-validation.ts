@@ -1,15 +1,7 @@
-import { contentKeys } from '../types/content.ts'
+import { contentKeys, contentFields } from '../types/content.ts'
 import type { SiteContent } from '../types/content'
 
-export const contentLimits: Record<keyof SiteContent, number> = {
-  home_title: 200,
-  home_subtitle: 500,
-  home_text: 10000,
-  project_title: 200,
-  project_content: 20000,
-  products_title: 200,
-  products_intro: 2000,
-}
+export const contentLimits = Object.fromEntries(contentFields.map(field => [field.key, field.limit])) as Record<keyof SiteContent, number>
 
 export function validateContentInput(input: unknown): SiteContent {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
@@ -20,7 +12,7 @@ export function validateContentInput(input: unknown): SiteContent {
     Object.keys(values).length !== contentKeys.length ||
     contentKeys.some((key) => !Object.hasOwn(values, key))
   ) {
-    throw new Error('Expected exactly the seven content keys')
+    throw new Error('Expected exactly the editable content keys')
   }
 
   const content = {} as SiteContent

@@ -9,8 +9,8 @@
     "check:cloudinary": "node --experimental-strip-types scripts/check-cloudinary.mjs",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "test:netlify": "node --test tests/netlify-content.test.mjs",
-    "test": "node --experimental-strip-types --test tests/products.test.ts tests/product-normalization.test.ts tests/content-normalization.test.ts tests/content-update.test.ts tests/cloudinary.test.ts"
+    "test:netlify": "node --experimental-strip-types --test tests/netlify-content.test.mjs",
+    "test": "node --experimental-strip-types --test tests/products.test.ts tests/product-normalization.test.ts tests/content-normalization.test.ts tests/content-update.test.ts tests/cloudinary.test.ts tests/site-text.test.ts"
   },
   "dependencies": {
     "@netlify/identity": "^2.0.0",

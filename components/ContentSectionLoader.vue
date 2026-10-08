@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const t = useSiteText()
 defineProps<{
   variant: 'home' | 'project' | 'products'
 }>()
@@ -12,7 +13,7 @@ defineProps<{
     aria-live="polite"
     aria-busy="true"
   >
-    <span class="sr-only">Carregant els continguts…</span>
+    <span class="sr-only">{{ t('common_carregant_els_continguts') }}</span>
     <template v-if="variant === 'home'">
       <div class="content-loader-home-copy" aria-hidden="true">
         <span class="content-loader-block content-loader-eyebrow"></span>
