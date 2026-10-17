@@ -3,6 +3,7 @@ const t = useSiteText()
 import type { Product } from '~/types/product'
 import { fallbackSiteContent } from '~/composables/useSiteContent'
 import { getVisibleProducts } from '~/utils/products'
+import { getSessionCachedData } from '~/utils/session-cache'
 
 const {
   data: content,
@@ -27,7 +28,10 @@ const {
   error,
   refresh,
 } = await useFetch<Product[]>('/api/products', {
+  key: 'site-products',
   lazy: true,
+  dedupe: 'defer',
+  getCachedData: getSessionCachedData<Product[]>,
   default: () => [],
 })
 const loading = computed(

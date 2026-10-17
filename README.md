@@ -56,7 +56,7 @@ Reinicia el servidor si modificas variables de entorno.
 3. Comprueba encabezados, IDs y valores; añade la categoría desde el nombre de la pestaña.
 4. Excluye productos inactivos y ordena por `ordre`, con los vacíos al final.
 5. Devuelve un array JSON de productos. Las filas vacías con solo casillas se ignoran.
-6. La página carga ese array con useFetch y aplica búsqueda y categoría en el navegador.
+6. La primera visita a Productos carga el catálogo con useFetch; las siguientes reutilizan los datos en memoria. La búsqueda y la categoría se aplican en el navegador.
 
 Las casillas booleanas y los textos TRUE/FALSE se normalizan. Un actiu vacío
 equivale a inactivo. Los precios numéricos y los decimales de texto simples con
@@ -177,3 +177,12 @@ El panel autenticado permite listar productos, subir, sustituir y eliminar
 imágenes JPG, PNG y WebP de hasta 5 MB. Las APIs validan la sesión y actualizan
 la columna `imatge` de Google Sheets. El código está desplegado, pero la carga
 está desplegada y lista para probar desde una sesión admin autenticada.
+
+## Datos durante la navegación
+
+Los contenidos se consultan una vez por carga de la web. El catálogo se consulta
+al entrar por primera vez en Productos. Nuxt conserva ambas respuestas en la
+memoria de esa pestaña y las reutiliza al cambiar de sección. No se usa
+localStorage ni caché compartida entre visitantes. Recargar el navegador vuelve
+a consultar los datos. Guardar textos desde el panel actualiza la copia en
+memoria de esa pestaña. Los botones de reintento fuerzan una nueva consulta.

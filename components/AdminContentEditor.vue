@@ -4,6 +4,7 @@ import { onBeforeRouteLeave } from 'vue-router'
 import { contentKeys, contentFields } from '~/types/content'
 import type { SiteContent } from '~/types/content'
 import { contentLimits, validateContentInput } from '~/utils/content-validation'
+import { updateSessionCachedData } from '~/utils/session-cache'
 
 const emit = defineEmits<{
   state: [value: { dirty: boolean; saving: boolean }]
@@ -14,7 +15,8 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
 const saved = ref(false)
-const sharedContent = useNuxtData<SiteContent>('site-content')
+const sharedContent = useSiteContent()
+const nuxtApp = useNuxtApp()
 
 const groups = computed(() => [...new Set(contentFields.map(field => field.group))].map(group => ({
   id: group,
@@ -110,7 +112,11 @@ async function save() {
     })
     draft.value = { ...result }
     original.value = { ...result }
-    sharedContent.data.value = result
+    // A slower public read must not overwrite the content just saved.
+    sharedContent.clear()
+    updateSessionCachedData('site-content', nuxtApp, sharedContent.data, result)
+    sharedContent.error.value = null
+    sharedContent.status.value = 'success'
     saved.value = true
   } catch (cause) {
     showRequestError(cause, 'save')

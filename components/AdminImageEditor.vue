@@ -1,6 +1,19 @@
 <script setup lang="ts">
 const t = useSiteText()
 import type { AdminProduct } from '~/server/utils/product-normalization'
+import type { Product } from '~/types/product'
+import { updateSessionCachedData } from '~/utils/session-cache'
+
+const nuxtApp = useNuxtApp()
+const publicProducts = useNuxtData<Product[]>('site-products')
+
+function updatePublicImage(productId: string, imatge: string | null) {
+  const cached = publicProducts.data.value
+  if (!cached) return
+  updateSessionCachedData('site-products', nuxtApp, publicProducts.data,
+    cached.map(product => product.id === productId ? { ...product, imatge } : product),
+  )
+}
 
 const products = ref<AdminProduct[]>([])
 const selectedId = ref('')
@@ -32,11 +45,12 @@ async function loadProducts() {
 async function upload() {
   const file = fileInput.value?.files?.[0]
   if (!file || !selectedProduct.value || busy.value) return
+  const product = selectedProduct.value
   error.value = ''
   status.value = ''
   busy.value = true
   const body = new FormData()
-  body.append('productId', selectedProduct.value.id)
+  body.append('productId', product.id)
   body.append('image', file)
   try {
     const result = await $fetch<{ imatge: string }>('/api/admin/product-image', {
@@ -44,7 +58,8 @@ async function upload() {
       body,
       retry: 0,
     })
-    selectedProduct.value.imatge = result.imatge
+    product.imatge = result.imatge
+    updatePublicImage(product.id, result.imatge)
     status.value = t('admin_imatge_desada_i_associada_al_producte')
     if (fileInput.value) fileInput.value.value = ''
   } catch (cause) {
@@ -62,6 +77,7 @@ async function upload() {
 
 async function removeImage() {
   if (!selectedProduct.value?.imatge || busy.value) return
+  const product = selectedProduct.value
   if (!window.confirm(t('admin_vols_eliminar_la_imatge_d_aquest_producte'))) return
   error.value = ''
   status.value = ''
@@ -69,10 +85,11 @@ async function removeImage() {
   try {
     await $fetch('/api/admin/product-image', {
       method: 'DELETE',
-      body: { productId: selectedProduct.value.id },
+      body: { productId: product.id },
       retry: 0,
     })
-    selectedProduct.value.imatge = null
+    product.imatge = null
+    updatePublicImage(product.id, null)
     status.value = t('admin_imatge_eliminada_del_producte')
   } catch {
     error.value = t('admin_no_hem_pogut_eliminar_la_imatge_torna')
