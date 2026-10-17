@@ -27,6 +27,10 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'ca' },
       title: 'La Circular',
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=1' },
+        { rel: 'alternate icon', href: '/favicon.ico?v=1' },
+      ],
     },
   },
 })
