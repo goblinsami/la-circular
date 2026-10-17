@@ -46,7 +46,6 @@ const displayedContent = computed(() =>
         </div>
         <div v-if="t('project_petits_gestos_benestar_quotidia') || t('project_ens_agrada_fer_les_coses_amb_calma')" class="project-aside-column">
           <aside class="card project-note" :aria-label="t('project_la_nostra_filosofia')">
-            <span class="small-dot" aria-hidden="true"></span>
             <h2 v-if="t('project_petits_gestos_benestar_quotidia')" class="editable-text">{{ t('project_petits_gestos_benestar_quotidia') }}</h2>
             <p v-if="t('project_ens_agrada_fer_les_coses_amb_calma')">{{ t('project_ens_agrada_fer_les_coses_amb_calma') }}</p>
           </aside>

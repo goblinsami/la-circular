@@ -47,6 +47,22 @@ test('empty project texts remove the note, its dot and the arrow link', async ()
   for (const orphan of ['project-note', 'small-dot', '↗', 'class="prose"']) assert.ok(!html.includes(orphan), orphan)
 })
 
+test('project note never shows a standalone bullet when its text exists', async () => {
+  for (const texts of [
+    { project_petits_gestos_benestar_quotidia: 'Petits gestos.' },
+    { project_ens_agrada_fer_les_coses_amb_calma: 'Amb cura i intencio.' },
+    {
+      project_petits_gestos_benestar_quotidia: 'Petits gestos.',
+      project_ens_agrada_fer_les_coses_amb_calma: 'Amb cura i intencio.',
+    },
+  ]) {
+    const html = await render('pages/el-nostre-projecte.vue', texts)
+    assert.ok(html.includes('project-note'))
+    assert.ok(!html.includes('small-dot'))
+    for (const text of Object.values(texts)) assert.ok(html.includes(text))
+  }
+})
+
 test('empty footer brand removes its punctuation', async () => {
   const html = await render('components/SiteFooter.vue', { footer_text: '.' })
   assert.ok(!html.includes('footer-brand'))
