@@ -174,7 +174,7 @@ test('Netlify adapter preserves the POST body through authentication and CSRF', 
         assert.equal(malformed.status, 400)
         assert.equal((await malformed.json()).data.code, 'INVALID_JSON')
         const fields = await call({
-          body: JSON.stringify({ ...content, home_title: '' }),
+          body: JSON.stringify({ ...content, home_title: 42 }),
         })
         assert.equal(fields.status, 400)
         assert.equal((await fields.json()).data.code, 'INVALID_CONTENT')

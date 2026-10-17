@@ -142,12 +142,14 @@ test('rejects duplicate ids across sheets, including inactive rows', () => {
   )
 })
 
-test('rejects rows with a missing id or name', () => {
+test('omits incomplete rows while preserving valid products in public and admin lists', () => {
   for (const row of [
     ['', 'A', '', '', '', true],
     ['1', '', '', '', '', true],
   ]) {
-    assert.throws(() => normalizeProductSheets([sheet([row])]), /required/)
+    const input = [sheet([row, ['VALID', 'Valid product', '', '', '', true]])]
+    assert.deepEqual(normalizeProductSheets(input).map(product => product.id), ['VALID'])
+    assert.deepEqual(normalizeAdminProductSheets(input).map(product => product.id), ['VALID'])
   }
 })
 

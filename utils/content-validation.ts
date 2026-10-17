@@ -20,8 +20,8 @@ export function validateContentInput(input: unknown): SiteContent {
     const value = values[key]
     if (typeof value !== 'string') throw new Error('Expected text')
     const normalized = value.replace(/\r\n?/g, '\n').trim()
-    if (!normalized || normalized.length > contentLimits[key]) {
-      throw new Error('Empty or oversized content')
+    if (normalized.length > contentLimits[key]) {
+      throw new Error('Oversized content')
     }
     content[key] = normalized
   }

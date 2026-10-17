@@ -6,14 +6,14 @@ defineEmits<{ retry: [] }>()
 
 <template>
   <div
-    v-if="status === 'idle' || status === 'pending'"
+    v-if="(status === 'idle' || status === 'pending') && t('common_carregant_els_textos')"
     class="content-status"
     role="status"
   >
-    <p>{{ t('common_carregant_els_textos') }}</p>
+    <p v-if="t('common_carregant_els_textos')">{{ t('common_carregant_els_textos') }}</p>
   </div>
-  <div v-else-if="status === 'error'" class="content-status" role="alert">
-    <p>{{ t('common_no_hem_pogut_carregar_els_textos_torna') }}</p>
-    <button class="button" type="button" @click="$emit('retry')">{{ t('common_torna_a_carregar_els_textos') }}</button>
+  <div v-else-if="status === 'error' && (t('common_no_hem_pogut_carregar_els_textos_torna') || t('common_torna_a_carregar_els_textos'))" class="content-status" role="alert">
+    <p v-if="t('common_no_hem_pogut_carregar_els_textos_torna')">{{ t('common_no_hem_pogut_carregar_els_textos_torna') }}</p>
+    <button v-if="t('common_torna_a_carregar_els_textos')" class="button" type="button" @click="$emit('retry')">{{ t('common_torna_a_carregar_els_textos') }}</button>
   </div>
 </template>

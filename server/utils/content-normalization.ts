@@ -1,4 +1,4 @@
-import { contentKeys, legacyContentKeys, defaultSiteContent } from '../../types/content.ts'
+import { contentKeys, defaultSiteContent } from '../../types/content.ts'
 import type { ContentKey, SiteContent } from '../../types/content'
 
 function isContentKey(value: unknown): value is ContentKey {
@@ -17,15 +17,12 @@ export function normalizeContentRows(rows: unknown[][]): SiteContent {
     // Expose only keys from the shared editable text inventory.
     if (!isContentKey(key)) continue
     if (key in content) throw new Error('Duplicate content key')
-    if (typeof row[1] !== 'string' || !row[1].trim()) {
-      throw new Error('Content values must be non-empty text')
+    if (row[1] != null && !['string', 'number', 'boolean'].includes(typeof row[1])) {
+      throw new Error('Content values must be text')
     }
-    content[key] = row[1].replace(/\r\n?/g, '\n').trim()
+    content[key] = String(row[1] ?? '').replace(/\r\n?/g, '\n').trim()
   }
 
-  if (legacyContentKeys.some((key) => !(key in content))) {
-    throw new Error('Missing content key')
-  }
-  // Existing seven-field sheets continue working until the first admin save.
+  // Missing rows use defaults; explicitly empty cells remain empty.
   return { ...defaultSiteContent, ...content }
 }

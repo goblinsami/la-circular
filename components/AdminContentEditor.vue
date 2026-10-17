@@ -172,7 +172,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
             :rows="field.rows"
             :maxlength="contentLimits[field.key]"
             :aria-describedby="'limit-' + field.key"
-            required
           />
           <input
             v-else
@@ -182,7 +181,6 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
             type="text"
             :maxlength="contentLimits[field.key]"
             :aria-describedby="'limit-' + field.key"
-            required
           />
           <p :id="'limit-' + field.key" class="admin-help">
             {{ t('editor_limit', { limit: contentLimits[field.key] }) }}

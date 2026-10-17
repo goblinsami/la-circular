@@ -77,7 +77,8 @@ export function normalizeProductSheets(
 
       const id = text(row[0])
       const nom = text(row[1])
-      if (!id || !nom) throw new Error('Product id and name are required')
+      // A row being edited must not take down the entire catalogue.
+      if (!id || !nom) continue
       if (ids.has(id)) throw new Error('Duplicate product id')
       ids.add(id)
 
@@ -124,7 +125,8 @@ export function normalizeAdminProductSheets(
       if (!row.some((value, index) => index !== 5 && !isBlank(value))) continue
       const id = text(row[0])
       const nom = text(row[1])
-      if (!id || !nom) throw new Error('Product id and name are required')
+      // A row being edited must not take down the entire catalogue.
+      if (!id || !nom) continue
       if (ids.has(id)) throw new Error('Duplicate product id')
       ids.add(id)
 

@@ -52,11 +52,11 @@ function resetFilters() {
 
 <template>
   <div class="container page-section">
-    <section aria-labelledby="products-title" :aria-busy="loading">
+    <section :aria-labelledby="displayedContent.products_title ? 'products-title' : undefined" :aria-busy="loading">
       <ContentSectionLoader v-if="contentLoading" variant="products" />
       <div v-else class="page-heading">
-        <p class="eyebrow">{{ t('products_la_nostra_seleccio') }}</p>
-        <h1 id="products-title" class="editable-title">
+        <p v-if="t('products_la_nostra_seleccio')" class="eyebrow">{{ t('products_la_nostra_seleccio') }}</p>
+        <h1 v-if="displayedContent.products_title" id="products-title" class="editable-title">
           <em>{{ displayedContent.products_title }}</em>
         </h1>
         <ContentStatus
@@ -64,18 +64,18 @@ function resetFilters() {
           :status="contentStatus"
           @retry="refreshContent()"
         />
-        <p class="lead editable-text">
+        <p v-if="displayedContent.products_intro" class="lead editable-text">
           {{ displayedContent.products_intro }}
         </p>
       </div>
 
       <div v-if="loading" class="card catalogue-status" role="status">
-        <p>{{ t('products_carregant_els_productes') }}</p>
+        <p v-if="t('products_carregant_els_productes')">{{ t('products_carregant_els_productes') }}</p>
       </div>
       <div v-else-if="error" class="card catalogue-status" role="alert">
-        <h2>{{ t('products_no_hem_pogut_carregar_el_cataleg') }}</h2>
-        <p>{{ t('products_torna_ho_a_provar_d_aqui_a') }}</p>
-        <button class="button" type="button" @click="refresh()">{{ t('products_torna_ho_a_provar') }}</button>
+        <h2 v-if="t('products_no_hem_pogut_carregar_el_cataleg')">{{ t('products_no_hem_pogut_carregar_el_cataleg') }}</h2>
+        <p v-if="t('products_torna_ho_a_provar_d_aqui_a')">{{ t('products_torna_ho_a_provar_d_aqui_a') }}</p>
+        <button v-if="t('products_torna_ho_a_provar')" class="button" type="button" @click="refresh()">{{ t('products_torna_ho_a_provar') }}</button>
       </div>
       <template v-else>
         <form
@@ -110,7 +110,7 @@ function resetFilters() {
               </option>
             </select>
           </div>
-          <button class="filter-reset" type="reset" :disabled="!hasFilters">{{ t('products_neteja_els_filtres') }}</button>
+          <button v-if="t('products_neteja_els_filtres')" class="filter-reset" type="reset" :disabled="!hasFilters">{{ t('products_neteja_els_filtres') }}</button>
         </form>
 
         <p
@@ -133,14 +133,14 @@ function resetFilters() {
             </li>
           </ul>
           <div v-else class="card empty-state">
-            <h2>
+            <h2 v-if="t(hasFilters ? 'products_no_hem_trobat_cap_producte' : 'products_encara_no_hi_ha_productes_disponibles')">
               {{
                 hasFilters
                   ? t('products_no_hem_trobat_cap_producte')
                   : t('products_encara_no_hi_ha_productes_disponibles')
               }}
             </h2>
-            <p>
+            <p v-if="t(hasFilters ? 'products_prova_amb_un_altre_nom_o_categoria' : 'products_torna_a_visitar_el_cataleg_mes_endavant')">
               {{
                 hasFilters
                   ? t('products_prova_amb_un_altre_nom_o_categoria')

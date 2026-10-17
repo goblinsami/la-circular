@@ -36,8 +36,8 @@ test('validates exactly the editable fields without mutating input', () => {
   assert.throws(() => validateContentInput(missing))
 })
 
-test('rejects missing text and enforces each field length', () => {
-  for (const value of ['', '   ', 1, false, null, {}, []]) {
+test('rejects non-text values and enforces each field length', () => {
+  for (const value of [1, false, null, {}, []]) {
     assert.throws(() =>
       validateContentInput({ ...validContent(), home_title: value }),
     )
@@ -93,7 +93,7 @@ test('keeps formula-like values, HTML and paragraph breaks as literal strings', 
   assert.deepEqual(update.data[4]?.values, [[content.project_content]])
 })
 
-test('refuses writes when the existing sheet has ambiguous or missing keys', () => {
+test('refuses writes when the existing sheet has ambiguous keys or headers', () => {
   const content = validateContentInput(validContent())
   assert.throws(() =>
     prepareContentUpdate(
@@ -101,7 +101,11 @@ test('refuses writes when the existing sheet has ambiguous or missing keys', () 
       content,
     ),
   )
-  assert.throws(() => prepareContentUpdate(validRows().filter(row => row[0] !== 'home_title'), content))
+  const rows = validRows().filter(row => row[0] !== 'home_title')
+  assert.deepEqual(prepareContentUpdate(rows, content).data[0], {
+    range: "'Continguts'!A" + (rows.length + 1) + ':B' + (rows.length + 1),
+    values: [['home_title', content.home_title]],
+  })
   assert.throws(() =>
     prepareContentUpdate(
       [['wrong', 'headers'], ...validRows().slice(1)],
@@ -127,4 +131,12 @@ test('migrates a seven-field sheet without overwriting unknown rows or existing 
   assert.equal(migrated.length, contentKeys.length + 2)
   for (const key of contentKeys) assert.equal(migrated.find(row => row[0] === key)?.[1], content[key])
   assert.ok(prepareContentUpdate(migrated, content).data.every(cell => cell.range.includes('!B')))
+})
+
+test('allows clearing text and saving a sheet with empty cells', () => {
+  const content = validateContentInput({ ...validContent(), home_title: '   ' })
+  assert.equal(content.home_title, '')
+  const rows = validRows()
+  rows[1] = ['home_title']
+  assert.deepEqual(prepareContentUpdate(rows, content).data[0], { range: "'Continguts'!B2", values: [['']] })
 })

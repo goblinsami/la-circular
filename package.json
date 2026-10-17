@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
     "test:netlify": "node --experimental-strip-types --test tests/netlify-content.test.mjs",
-    "test": "node --experimental-strip-types --test tests/products.test.ts tests/product-normalization.test.ts tests/content-normalization.test.ts tests/content-update.test.ts tests/cloudinary.test.ts tests/site-text.test.ts"
+    "test": "node --experimental-strip-types --test tests/products.test.ts tests/product-normalization.test.ts tests/content-normalization.test.ts tests/content-update.test.ts tests/cloudinary.test.ts tests/site-text.test.ts tests/empty-content-render.test.mjs"
   },
   "dependencies": {
     "@netlify/identity": "^2.0.0",

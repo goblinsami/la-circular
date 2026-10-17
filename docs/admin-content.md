@@ -32,7 +32,10 @@ Si faltan las nuevas claves se muestran sus valores iniciales sin romper la web.
 Al guardar desde el panel se añaden las claves nuevas al final de `Continguts`
 en la misma operación que actualiza las existentes. No se modifican otras filas
 ni las pestañas de productos. Reordenar las filas no cambia su significado.
-Las claves duplicadas y los valores vacíos se rechazan antes de escribir.
+Las claves duplicadas se rechazan antes de escribir. Los valores vacíos se
+aceptan y ocultan el texto junto con sus adornos. Las filas ausentes usan los
+valores por defecto y se vuelven a crear al guardar desde el panel. Los valores
+numéricos y booleanos de Sheets se leen como texto.
 
 La cuenta de servicio necesita permiso **Editor** sobre el Sheet para guardar.
 Las lecturas públicas usan alcance de solo lectura. El esquema funciona tanto
