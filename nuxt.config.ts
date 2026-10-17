@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs'
+
+const favicon = readFileSync(new URL('./public/favicon.svg', import.meta.url), 'utf8')
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-28',
   devtools: { enabled: false },
@@ -28,8 +32,12 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'ca' },
       title: 'La Circular',
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=1' },
-        { rel: 'alternate icon', href: '/favicon.ico?v=1' },
+        {
+          key: 'site-favicon',
+          rel: 'icon',
+          type: 'image/svg+xml',
+          href: 'data:image/svg+xml,' + encodeURIComponent(favicon),
+        },
       ],
     },
   },
