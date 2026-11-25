@@ -563,6 +563,7 @@ main {
 }
 .footer-inner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4);
 }
@@ -579,7 +580,56 @@ main {
   font-size: 0.85rem;
 }
 .footer-note {
-  margin-left: auto;
+  margin-top: var(--space-3);
+  text-align: right;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+.footer-funding {
+  margin-top: var(--space-4);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  background: #fff;
+}
+.footer-funding-heading {
+  margin-bottom: var(--space-4);
+  font: 400 0.9rem/1.5 var(--font-body);
+  letter-spacing: 0;
+  color: var(--color-muted);
+}
+.footer-funding-logos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-4) clamp(1rem, 3vw, 3rem);
+}
+.footer-funding-logos img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 6rem;
+  object-fit: contain;
+}
+.footer-funding-statement {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid #e5e0d8;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  text-align: left;
+}
+@media (min-width: 64rem) {
+  .footer-funding-logos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 22rem) {
+  .footer-funding-logos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .footer-funding-logos img {
+    max-width: 22rem;
+    margin-inline: auto;
+  }
 }
 
 @media (max-width: 63.99rem) {
@@ -724,7 +774,7 @@ main {
     gap: var(--space-1);
   }
   .footer-note {
-    margin-left: 0;
+    text-align: left;
   }
 }
 
