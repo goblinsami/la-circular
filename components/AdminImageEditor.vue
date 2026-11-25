@@ -2,6 +2,7 @@
 const t = useSiteText()
 import type { AdminProduct } from '~/server/utils/product-normalization'
 import type { Product } from '~/types/product'
+import { getVisibleProducts } from '~/utils/products'
 import { updateSessionCachedData } from '~/utils/session-cache'
 
 const nuxtApp = useNuxtApp()
@@ -16,6 +17,8 @@ function updatePublicImage(productId: string, imatge: string | null) {
 }
 
 const products = ref<AdminProduct[]>([])
+const search = ref('')
+const filteredProducts = computed(() => getVisibleProducts(products.value, search.value))
 const selectedId = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const loading = ref(true)
@@ -24,7 +27,7 @@ const error = ref('')
 const status = ref('')
 
 const selectedProduct = computed(() =>
-  products.value.find((product) => product.id === selectedId.value),
+  filteredProducts.value.find((product) => product.id === selectedId.value),
 )
 
 async function loadProducts() {
@@ -32,9 +35,7 @@ async function loadProducts() {
   error.value = ''
   try {
     products.value = await $fetch<AdminProduct[]>('/api/admin/products')
-    if (!products.value.some((product) => product.id === selectedId.value)) {
-      selectedId.value = products.value[0]?.id ?? ''
-    }
+    syncSelection()
   } catch {
     error.value = t('admin_no_hem_pogut_carregar_els_productes_torna')
   } finally {
@@ -98,6 +99,14 @@ async function removeImage() {
   }
 }
 
+function syncSelection() {
+  if (!filteredProducts.value.some(product => product.id === selectedId.value)) {
+    selectedId.value = filteredProducts.value[0]?.id ?? ''
+  }
+}
+
+watch(filteredProducts, syncSelection, { flush: 'sync' })
+
 watch(selectedId, () => {
   status.value = ''
   error.value = ''
@@ -120,10 +129,21 @@ onMounted(loadProducts)
     >{{ t('products_torna_ho_a_provar') }}</button>
     <div v-if="!loading && products.length" class="image-editor-controls">
       <div class="filter-field">
+        <label for="image-product-search">{{ t('products_cerca_per_nom') }}</label>
+        <input
+          id="image-product-search"
+          v-model="search"
+          type="search"
+          :disabled="busy"
+          autocomplete="off"
+        />
+      </div>
+      <p v-if="!filteredProducts.length" role="status">{{ t('products_no_hem_trobat_cap_producte') }}</p>
+      <div v-if="filteredProducts.length" class="filter-field">
         <label for="image-product">{{ t('admin_producte') }}</label>
         <select id="image-product" v-model="selectedId" :disabled="busy">
-          <option v-for="product in products" :key="product.id" :value="product.id">
-            {{ t(product.actiu ? 'admin_product_option' : 'admin_product_option_inactive', { name: product.nom, category: product.categoria }) }}
+          <option v-for="product in filteredProducts" :key="product.id" :value="product.id">
+            {{ t('admin_product_option', { name: product.nom, category: product.categoria }) }}
           </option>
         </select>
       </div>
@@ -134,8 +154,8 @@ onMounted(loadProducts)
           loading="lazy"
         />
       </div>
-      <p v-else class="admin-help">{{ t('admin_aquest_producte_encara_no_te_imatge') }}</p>
-      <form class="image-upload-form" :aria-busy="busy" @submit.prevent="upload">
+      <p v-else-if="selectedProduct" class="admin-help">{{ t('admin_aquest_producte_encara_no_te_imatge') }}</p>
+      <form v-if="selectedProduct" class="image-upload-form" :aria-busy="busy" @submit.prevent="upload">
         <div class="filter-field">
           <label for="product-image-file">{{ t('admin_selecciona_una_imatge') }}</label>
           <input
