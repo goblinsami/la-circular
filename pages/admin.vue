@@ -16,18 +16,6 @@ const {
 const email = ref('')
 const password = ref('')
 const confirmation = ref('')
-const editorState = ref({ dirty: false, saving: false })
-
-async function signOut() {
-  if (editorState.value.saving) return
-  if (
-    editorState.value.dirty &&
-    !window.confirm(t('admin_tens_canvis_sense_desar_vols_tancar_la'))
-  )
-    return
-  await logout()
-}
-
 useHead(() => ({
   title: t('admin_administracio_la_circular'),
   meta: [
@@ -72,13 +60,12 @@ async function submit() {
             <button
               class="button"
               type="button"
-              :disabled="busy || editorState.saving"
-              @click="signOut"
+              :disabled="busy"
+              @click="logout"
             >
               {{ busy ? t('admin_tancant_la_sessio') : t('admin_tanca_la_sessio') }}
             </button>
           </div>
-          <AdminContentEditor @state="editorState = $event" />
           <AdminImageEditor />
         </template>
         <template v-else-if="available">
