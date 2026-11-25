@@ -1,15 +1,15 @@
 import { contentKeys } from '../../types/content.ts'
-import type { SiteContent } from '../../types/content'
+import type { SiteContent, ContentKey } from '../../types/content'
 import { normalizeContentRows } from './content-normalization.ts'
 
-export function prepareContentUpdate(rows: unknown[][], content: SiteContent) {
+export function prepareContentUpdate(rows: unknown[][], content: SiteContent, keys: readonly ContentKey[] = contentKeys) {
   // Validate the existing sheet before deriving row numbers from its keys.
   // Never assume rows are consecutive or in a fixed order.
   normalizeContentRows(rows)
   let nextRow = rows.length + 1
   return {
     valueInputOption: 'RAW',
-    data: contentKeys.map((key) => {
+    data: keys.map((key) => {
       const index = rows.findIndex(
         (row, rowIndex) =>
           rowIndex > 0 && typeof row[0] === 'string' && row[0].trim() === key,

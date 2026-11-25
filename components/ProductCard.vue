@@ -2,11 +2,20 @@
 const t = useSiteText()
 import type { Product } from '~/types/product'
 
-defineProps<{ product: Product }>()
-
-const priceFormatter = new Intl.NumberFormat('ca-ES', {
-  style: 'currency',
-  currency: 'EUR',
+const props = defineProps<{ product: Product }>()
+const infusionTime = computed(() =>
+  props.product.descripcio?.match(/(?:De\s+)?(\d+)(?:\s+a\s+(\d+))?\s*['’]?\s*(?:min\s*)?d['’]infusió\.?$/i),
+)
+const preparation = computed(() =>
+  infusionTime.value
+    ? `Infusió · ${infusionTime.value[1]}${infusionTime.value[2] ? `–${infusionTime.value[2]}` : ''} min`
+    : '',
+)
+const description = computed(() => {
+  const value = props.product.descripcio ?? ''
+  return infusionTime.value
+    ? value.slice(0, infusionTime.value.index).trim().replace(/\s+\.$/, '.')
+    : value
 })
 </script>
 
@@ -21,13 +30,13 @@ const priceFormatter = new Intl.NumberFormat('ca-ES', {
         decoding="async"
       />
     </figure>
-    <p class="product-category">{{ product.categoria }}</p>
-    <h2 :id="'product-' + product.id">{{ product.nom }}</h2>
-    <p v-if="product.descripcio" class="product-description">
-      {{ product.descripcio }}
-    </p>
-    <p v-if="product.preu !== undefined" class="product-price">
-      {{ priceFormatter.format(product.preu) }}
-    </p>
+    <div class="product-card-content">
+      <p class="product-category">{{ product.categoria }}</p>
+      <h2 :id="'product-' + product.id">{{ product.nom }}</h2>
+      <p v-if="description" class="product-description">
+        {{ description }}
+      </p>
+      <p v-if="preparation" class="product-preparation">{{ preparation }}</p>
+    </div>
   </article>
 </template>

@@ -81,3 +81,20 @@ test('empty status messages and retry labels leave no empty button or alert', as
     assert.ok(!html.includes('content-status'))
   }
 })
+
+test('page photos replace only their own default block and can be cleared', async () => {
+  const url = 'https://res.cloudinary.com/demo/image/upload/shop.jpg'
+  const home = await render('pages/index.vue', {home_image: url, home_image_alt: 'La botiga', home_cuidar_nos_de_manera_natural: 'Cuidar-nos'})
+  assert.match(home, /page-feature-image/)
+  assert.match(home, /alt="La botiga"/)
+  assert.doesNotMatch(home, /art-circle/)
+  const project = await render('pages/el-nostre-projecte.vue', {project_image: url, project_image_alt: 'Interior', project_petits_gestos_benestar_quotidia: 'Petits gestos'})
+  assert.match(project, /page-feature-image/)
+  assert.doesNotMatch(project, /project-note/)
+  const defaultHome = await render('pages/index.vue', {home_image: '', project_image: url, home_cuidar_nos_de_manera_natural: 'Cuidar-nos'})
+  assert.match(defaultHome, /art-circle/)
+  assert.doesNotMatch(defaultHome, /page-feature-image/)
+  const defaultProject = await render('pages/el-nostre-projecte.vue', {project_image: '', home_image: url, project_petits_gestos_benestar_quotidia: 'Petits gestos'})
+  assert.match(defaultProject, /project-note/)
+  assert.doesNotMatch(defaultProject, /page-feature-image/)
+})

@@ -16,6 +16,14 @@ const {
 const email = ref('')
 const password = ref('')
 const confirmation = ref('')
+const localDevelopment = computed(() => import.meta.dev && user.value?.id === 'local-development')
+const contentState = ref({ dirty: false, saving: false })
+const imageState = ref({ dirty: false, saving: false })
+async function signOut() {
+  if (contentState.value.saving || imageState.value.saving) return
+  if ((contentState.value.dirty || imageState.value.dirty) && !window.confirm(t('admin_tens_canvis_sense_desar_vols_tancar_la'))) return
+  await logout()
+}
 useHead(() => ({
   title: t('admin_administracio_la_circular'),
   meta: [
@@ -58,15 +66,24 @@ async function submit() {
             <p class="admin-email">{{ user?.email }}</p>
             <p>{{ t('admin_benvingut_a_l_espai_d_administracio_de') }}</p>
             <button
+              v-if="!localDevelopment"
               class="button"
               type="button"
               :disabled="busy"
-              @click="logout"
+              @click="signOut"
             >
               {{ busy ? t('admin_tancant_la_sessio') : t('admin_tanca_la_sessio') }}
             </button>
           </div>
-          <AdminImageEditor />
+          <AdminToggle :title="t('admin_textos_de_la_web')" panel-id="admin-text-editor">
+            <AdminContentEditor @state="contentState = $event" />
+          </AdminToggle>
+          <AdminToggle :title="t('admin_web_images')" panel-id="admin-web-images">
+            <AdminContentEditor mode="images" @state="imageState = $event" />
+          </AdminToggle>
+          <AdminToggle :title="t('admin_imatges_dels_productes')" panel-id="admin-product-images" default-open>
+            <AdminImageEditor />
+          </AdminToggle>
         </template>
         <template v-else-if="available">
           <p class="lead">

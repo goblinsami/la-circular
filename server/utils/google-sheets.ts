@@ -1,5 +1,5 @@
 import { JWT } from 'google-auth-library'
-import type { SiteContent } from '../../types/content'
+import type { SiteContent, ContentKey } from '../../types/content'
 import { prepareContentUpdate } from './content-update'
 import {
   normalizeAdminProductSheets,
@@ -168,9 +168,10 @@ export async function readContentRows(
 export async function writeSiteContent(
   config: SheetsConfig,
   content: SiteContent,
+  keys?: readonly ContentKey[],
 ): Promise<void> {
   const rows = await readContentRows(config)
-  const body = prepareContentUpdate(rows, content)
+  const body = prepareContentUpdate(rows, content, keys)
   const client = createSheetsClient(config, true)
   const { data } = await client.request<{ totalUpdatedCells?: number }>({
     url: spreadsheetUrl(config) + '/values:batchUpdate',

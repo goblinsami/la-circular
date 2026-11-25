@@ -1,4 +1,5 @@
 import { getSettings, getUser, verifyRequestOrigin } from '@netlify/identity'
+import { isLocalAdminRequest, hasLocalWriteOrigin } from '../utils/local-admin'
 
 export default defineEventHandler(async (event) => {
   const path = getRequestURL(event).pathname
@@ -6,6 +7,14 @@ export default defineEventHandler(async (event) => {
 
   setHeader(event, 'Cache-Control', 'private, no-store')
   setHeader(event, 'Netlify-CDN-Cache-Control', 'no-store')
+  const requestUrl = getRequestURL(event, { xForwardedHost: false, xForwardedProto: false })
+  if (isLocalAdminRequest(import.meta.dev === true, requestUrl, event.node.req.socket.remoteAddress)) {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(event.method) && !hasLocalWriteOrigin(requestUrl, getHeader(event, 'origin'))) {
+      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+    }
+    event.context.adminUser = { id: 'local-development', email: 'desenvolupament@localhost' }
+    return
+  }
   const user = await getUser()
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })

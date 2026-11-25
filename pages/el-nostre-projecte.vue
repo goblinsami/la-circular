@@ -44,7 +44,10 @@ const displayedContent = computed(() =>
             >
           </div>
         </div>
-        <div v-if="t('project_petits_gestos_benestar_quotidia') || t('project_ens_agrada_fer_les_coses_amb_calma')" class="project-aside-column">
+        <div v-if="displayedContent.project_image" class="project-aside-column">
+          <img class="page-feature-image" :src="displayedContent.project_image" :alt="displayedContent.project_image_alt" width="800" height="600" />
+        </div>
+        <div v-else-if="t('project_petits_gestos_benestar_quotidia') || t('project_ens_agrada_fer_les_coses_amb_calma')" class="project-aside-column">
           <aside class="card project-note" :aria-label="t('project_la_nostra_filosofia')">
             <h2 v-if="t('project_petits_gestos_benestar_quotidia')" class="editable-text">{{ t('project_petits_gestos_benestar_quotidia') }}</h2>
             <p v-if="t('project_ens_agrada_fer_les_coses_amb_calma')">{{ t('project_ens_agrada_fer_les_coses_amb_calma') }}</p>

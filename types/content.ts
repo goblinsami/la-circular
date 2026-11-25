@@ -139,6 +139,22 @@ export const contentFields = [
   {"key":"admin_auth_message_6","value":"No hem pogut tancar la sessió. Torna-ho a provar.","group":"admin","limit":2000},
   {"key":"admin_product_option","value":"{name} · {category}","group":"admin","limit":2000},
   {"key":"admin_product_option_inactive","value":"{name} · {category} · Inactiu","group":"admin","limit":2000},
+
+  {"key": "admin_page_image", "value": "Imatge de la pàgina", "group": "admin", "limit": 2000},
+  {"key": "admin_page_image_alt", "value": "Descripció de la imatge (accessibilitat)", "group": "admin", "limit": 2000},
+  {"key": "admin_page_image_default", "value": "Es mostra el bloc original de la pàgina.", "group": "admin", "limit": 2000},
+  {"key": "admin_page_image_reset", "value": "Torna al bloc original", "group": "admin", "limit": 2000},
+  {"key": "admin_page_image_help", "value": "JPG, PNG o WebP · màxim 5 MB. Desa els canvis per publicar la selecció.", "group": "admin", "limit": 2000},
+  {"key": "admin_page_image_uploading", "value": "Pujant la imatge…", "group": "admin", "limit": 2000},
+  {"key": "admin_page_image_preview", "value": "Previsualització de la imatge seleccionada", "group": "admin", "limit": 2000},
+  {"key":"home_image","value":"","group":"home","limit":2000},
+  {"key":"home_image_alt","value":"","group":"home","limit":300},
+  {"key":"project_image","value":"","group":"project","limit":2000},
+  {"key":"project_image_alt","value":"","group":"project","limit":300},
+  {"key":"admin_web_images","value":"Imatges de la web","group":"admin","limit":200},
+  {"key": "footer_funding_label", "value": "Entitats finançadores", "group": "footer", "limit": 2000},
+  {"key": "footer_funding_heading", "value": "Amb el suport de", "group": "footer", "limit": 2000},
+  {"key": "footer_funding_statement", "value": "Aquesta actuació està impulsada i subvencionada pel Departament d’Empresa i Treball i cofinançada per la Unió Europea mitjançant el Fons Social Europeu Plus", "group": "footer", "limit": 2000},
 ] as const
 
 export const legacyContentKeys = ["home_title","home_subtitle","home_text","project_title","project_content","products_title","products_intro"] as const

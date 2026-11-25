@@ -37,8 +37,8 @@ const fundingLogos = [
       >
       <p v-if="t('home_subtitle')">{{ t('home_subtitle') }}</p>
     </div>
-    <section class="container footer-funding" aria-label="Entitats finançadores" lang="ca">
-      <h2 class="footer-funding-heading">Amb el suport de</h2>
+    <section class="container footer-funding" :aria-label="t('footer_funding_label')" lang="ca">
+      <h2 class="footer-funding-heading">{{ t('footer_funding_heading') }}</h2>
       <div class="footer-funding-logos">
         <img
           v-for="logo in fundingLogos"
@@ -50,7 +50,7 @@ const fundingLogos = [
           loading="lazy"
         />
       </div>
-      <p class="footer-funding-statement">Aquesta actuació està impulsada i subvencionada pel Departament d’Empresa i Treball i cofinançada per la Unió Europea mitjançant el Fons Social Europeu Plus</p>
+      <p class="footer-funding-statement">{{ t('footer_funding_statement') }}</p>
     </section>
     <p v-if="t('footer_a_prop_teu_cada_dia')" class="container footer-note">{{ t('footer_a_prop_teu_cada_dia') }}</p>
   </footer>

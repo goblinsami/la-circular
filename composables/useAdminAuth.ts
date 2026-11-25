@@ -40,6 +40,13 @@ export function useAdminAuth() {
     unsubscribe?.()
     error.value = ''
     try {
+      if (import.meta.dev && ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)) {
+        const localUser = await getUser()
+        if (localUser?.id === 'local-development') {
+          available.value = true
+          return
+        }
+      }
       const settings = await getSettings()
       if (!settings.disableSignup) {
         error.value = t("admin_auth_message_1")

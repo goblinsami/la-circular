@@ -8,11 +8,21 @@ import {
 import { prepareContentUpdate } from '../server/utils/content-update.ts'
 
 const validContent = () =>
-  Object.fromEntries(contentKeys.map((key) => [key, 'Text de ' + key]))
+  Object.fromEntries(contentKeys.map((key) => [key, key === 'home_image' || key === 'project_image' ? '' : 'Text de ' + key]))
 const validRows = () => [
   ['clau', 'valor'],
   ...contentKeys.map((key) => [key, 'Text existent']),
 ]
+
+test('partial updates only touch the selected image fields, preserving texts', () => {
+  const content = validateContentInput(validContent())
+  content.home_image = 'https://res.cloudinary.com/demo/image/upload/shop.jpg'
+  const update = prepareContentUpdate(validRows(), content, ['home_image', 'home_image_alt'])
+  assert.equal(update.data.length, 2)
+  const imageRow = contentKeys.indexOf('home_image') + 2
+  assert.equal(update.data[0]?.range, "'Continguts'!B" + imageRow)
+  assert.deepEqual(update.data[0]?.values, [[content.home_image]])
+})
 
 test('validates exactly the editable fields without mutating input', () => {
   const input = validContent()
@@ -43,6 +53,7 @@ test('rejects non-text values and enforces each field length', () => {
     )
   }
   for (const key of contentKeys) {
+    if (key === 'home_image' || key === 'project_image') continue
     assert.equal(
       validateContentInput({
         ...validContent(),
@@ -139,4 +150,13 @@ test('allows clearing text and saving a sheet with empty cells', () => {
   const rows = validRows()
   rows[1] = ['home_title']
   assert.deepEqual(prepareContentUpdate(rows, content).data[0], { range: "'Continguts'!B2", values: [['']] })
+})
+
+ test('page images accept only Cloudinary upload URLs or an empty default', () => {
+  const url = 'https://res.cloudinary.com/demo/image/upload/v1/la-circular/pages/home/photo.jpg'
+  assert.equal(validateContentInput({...validContent(), home_image: url}).home_image, url)
+  assert.equal(validateContentInput({...validContent(), project_image: ''}).project_image, '')
+  for (const invalid of ['javascript:alert(1)', 'https://example.com/image.jpg', 'http://res.cloudinary.com/demo/image/upload/a.jpg']) {
+    assert.throws(() => validateContentInput({...validContent(), home_image: invalid}))
+  }
 })

@@ -92,3 +92,34 @@ Remove-Item Env:NITRO_PRESET
 
 Esta actualización del código no despliega la web ni modifica el Excel real.
 Las nuevas filas se crean cuando se guarden los textos desde el panel actualizado.
+# Imágenes de las páginas
+
+En la sección independiente **Imatges de la web**, los grupos **Inici** y
+**El nostre projecte** incluyen el campo **Imatge de la pàgina**, que
+permite seleccionar un archivo JPG, PNG o WebP de hasta 5 MB. Se sube a
+Cloudinary en `la-circular/pages/home` o `la-circular/pages/project` y se muestra
+una previsualización. Añade una descripción de la imagen para accesibilidad y
+pulsa **Desa els canvis** para publicar. Las selecciones son independientes.
+
+**Torna al bloc original** quita la selección del borrador; al guardar reaparece
+la composición original de esa página. No elimina el archivo de Cloudinary.
+Las subidas que no se guardan tampoco eliminan archivos de Cloudinary.
+Las nuevas claves se añaden automáticamente a `Continguts` al guardar, sin
+cambiar las filas existentes. Se reutilizan las credenciales actuales de
+Cloudinary y Google Sheets, y la autenticación del admin.
+
+## Desarrollo local
+
+Ejecuta `npm run dev` y abre `http://localhost:3000/admin` o
+`http://127.0.0.1:3000/admin`. En desarrollo la sesión se inicia automáticamente
+como `desenvolupament@localhost`, sin Netlify Identity. El editor de contenidos
+y las imágenes usan las credenciales de `.env`: los cambios guardados afectan
+a los servicios configurados, no a una copia simulada.
+
+Este acceso solo se incluye en el servidor de desarrollo y requiere un nombre
+de host local. Las escrituras exigen el mismo origen. En una build de producción
+se conserva la autenticación habitual de Netlify Identity, incluso si se sirve
+en localhost.
+
+El editor de textos permanece plegado y no incluye los selectores de fotos.
+Cada editor guarda únicamente sus propios campos mediante una actualización parcial.

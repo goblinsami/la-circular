@@ -47,7 +47,8 @@ const displayedContent = computed(() =>
           >
         </div>
       </div>
-      <div v-if="t('home_la_circular') || t('home_cuidar_nos_de_manera_natural') || t('home_a_prop_teu') || t('home_les_petites_coses_de_cada_dia')" class="hero-art" aria-hidden="true">
+      <img v-if="displayedContent.home_image" class="page-feature-image" :src="displayedContent.home_image" :alt="displayedContent.home_image_alt" width="800" height="600" fetchpriority="high" />
+      <div v-else-if="t('home_la_circular') || t('home_cuidar_nos_de_manera_natural') || t('home_a_prop_teu') || t('home_les_petites_coses_de_cada_dia')" class="hero-art" aria-hidden="true">
         <div v-if="t('home_la_circular') || t('home_cuidar_nos_de_manera_natural') || t('home_a_prop_teu')" class="art-orbit"></div>
         <div v-if="t('home_la_circular') || t('home_cuidar_nos_de_manera_natural') || t('home_a_prop_teu')" class="art-circle">
           <span v-if="t('home_la_circular')" class="art-caption">{{ t('home_la_circular') }}</span>

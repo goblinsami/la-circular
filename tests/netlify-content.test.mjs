@@ -15,7 +15,7 @@ test('Netlify adapter preserves the POST body through authentication and CSRF', 
   const requestContext = new AsyncLocalStorage()
   const origin = 'https://la-circular.netlify.app'
   const keys = contentKeys
-  const content = Object.fromEntries(keys.map((key) => [key, 'Text de ' + key]))
+  const content = Object.fromEntries(keys.map((key) => [key, key === 'home_image' || key === 'project_image' ? '' : 'Text de ' + key]))
   content.home_text = 'Alimentació i benestar.\n\nSegon paràgraf.'
   let rows = [['clau', 'valor'], ['other', 'Keep'], ...Object.entries(content)]
   let writes = 0

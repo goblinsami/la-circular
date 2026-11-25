@@ -1,7 +1,9 @@
 <script setup lang="ts">
 const t = useSiteText()
+const props = withDefaults(defineProps<{ mode?: 'texts' | 'images' }>(), { mode: 'texts' })
+const editorTitle = computed(() => t(props.mode === 'images' ? 'admin_web_images' : 'admin_textos_de_la_web'))
 import { onBeforeRouteLeave } from 'vue-router'
-import { contentKeys, contentFields } from '~/types/content'
+import { contentFields } from '~/types/content'
 import type { SiteContent } from '~/types/content'
 import { contentLimits, validateContentInput } from '~/utils/content-validation'
 import { updateSessionCachedData } from '~/utils/session-cache'
@@ -13,27 +15,32 @@ const draft = ref<SiteContent | null>(null)
 const original = ref<SiteContent | null>(null)
 const loading = ref(true)
 const saving = ref(false)
+const uploadingImage = ref(false)
 const error = ref('')
 const saved = ref(false)
 const sharedContent = useSiteContent()
 const nuxtApp = useNuxtApp()
 
-const groups = computed(() => [...new Set(contentFields.map(field => field.group))].map(group => ({
+const editableFields = computed(() => contentFields.filter(field => {
+  const image = ['home_image', 'home_image_alt', 'project_image', 'project_image_alt'].includes(field.key)
+  return props.mode === 'images' ? image : !image
+}))
+const groups = computed(() => [...new Set(editableFields.value.map(field => field.group))].map(group => ({
   id: group,
   title: t(group === 'home' ? 'editor_group_home' : group === 'project' ? 'editor_group_project' : group === 'products' ? 'editor_group_products' : group === 'header' ? 'editor_group_header' : group === 'footer' ? 'editor_group_footer' : group === 'common' ? 'editor_group_common' : 'editor_group_admin'),
   path: group === 'project' ? '/el-nostre-projecte' : group === 'products' ? '/productes' : group === 'admin' ? '/admin' : '/',
-  fields: contentFields.filter(field => field.group === group).map(field => ({ key: field.key, rows: field.limit > 500 ? 4 : undefined })),
+  fields: editableFields.value.filter(field => field.group === group).map(field => ({ key: field.key, label: field.key.endsWith('_image_alt') ? t('admin_page_image_alt') : field.key.endsWith('_image') ? t('admin_page_image') : t(field.key).slice(0, 90), rows: field.limit > 500 ? 4 : undefined })),
 })))
 
 const dirty = computed(() =>
   Boolean(
     draft.value &&
     original.value &&
-    contentKeys.some((key) => draft.value![key] !== original.value![key]),
+    editableFields.value.some(({ key }) => draft.value![key] !== original.value![key]),
   ),
 )
 watch(
-  [dirty, saving],
+  [dirty, computed(() => saving.value || uploadingImage.value)],
   ([isDirty, isSaving]) => {
     emit('state', { dirty: isDirty, saving: isSaving })
   },
@@ -92,7 +99,7 @@ async function load() {
 }
 
 async function save() {
-  if (!draft.value || saving.value || !dirty.value) return
+  if (!draft.value || saving.value || uploadingImage.value || !dirty.value) return
   error.value = ''
   saved.value = false
   let content: SiteContent
@@ -106,8 +113,8 @@ async function save() {
   saving.value = true
   try {
     const result = await $fetch<SiteContent>('/api/admin/content', {
-      method: 'POST',
-      body: content,
+      method: 'PATCH',
+      body: Object.fromEntries(editableFields.value.map(({ key }) => [key, content[key]])),
       retry: 0,
     })
     draft.value = { ...result }
@@ -126,12 +133,12 @@ async function save() {
 }
 
 function beforeUnload(event: BeforeUnloadEvent) {
-  if (!dirty.value && !saving.value) return
+  if (!dirty.value && !saving.value && !uploadingImage.value) return
   event.preventDefault()
   event.returnValue = ''
 }
 onBeforeRouteLeave(() => {
-  if (saving.value) return false
+  if (saving.value || uploadingImage.value) return false
   return (
     !dirty.value ||
     window.confirm(t('admin_tens_canvis_sense_desar_vols_sortir_igualment'))
@@ -145,9 +152,9 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
 </script>
 
 <template>
-  <section class="content-editor" aria-labelledby="content-editor-title">
-    <h2 id="content-editor-title">{{ t('admin_textos_de_la_web') }}</h2>
-    <p>{{ t('admin_edita_els_textos_i_desa_els_canvis') }}</p>
+  <section class="content-editor" :aria-labelledby="'content-editor-title-' + mode">
+    <h2 :id="'content-editor-title-' + mode">{{ editorTitle }}</h2>
+    <p v-if="mode === 'texts'">{{ t('admin_edita_els_textos_i_desa_els_canvis') }}</p>
     <p v-if="loading" role="status">{{ t('common_carregant_els_textos') }}</p>
     <p v-if="error" role="alert" class="admin-error">{{ error }}</p>
     <button
@@ -161,7 +168,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
         v-for="group in groups"
         :key="group.id"
         class="card content-group"
-        :disabled="saving"
+        :disabled="saving || uploadingImage"
       >
         <legend>{{ group.title }}</legend>
         <div
@@ -169,9 +176,15 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
           :key="field.key"
           class="filter-field"
         >
-          <label :for="'content-' + field.key">{{ t(field.key).slice(0, 90) }} <code>{{ field.key }}</code></label>
+          <label :for="'content-' + field.key">{{ field.label }} <code>{{ field.key }}</code></label>
+          <AdminPageImage
+            v-if="field.key === 'home_image' || field.key === 'project_image'"
+            v-model="draft[field.key]"
+            :page="field.key === 'home_image' ? 'home' : 'project'"
+            @busy="uploadingImage = $event"
+          />
           <textarea
-            v-if="field.rows"
+            v-else-if="field.rows"
             :id="'content-' + field.key"
             v-model="draft[field.key]"
             :name="field.key"
@@ -197,7 +210,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
         >
       </fieldset>
       <div class="content-save">
-        <button class="button" type="submit" :disabled="saving || !dirty">
+        <button class="button" type="submit" :disabled="saving || uploadingImage || !dirty">
           {{ saving ? t('admin_desant') : t('admin_desa_els_canvis') }}
         </button>
         <p role="status">

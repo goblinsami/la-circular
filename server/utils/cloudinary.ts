@@ -104,12 +104,13 @@ export async function uploadProductImage(
   config: CloudinaryConfig,
   productId: string,
   data: Buffer,
+  kind: 'products' | 'pages' = 'products',
 ): Promise<string> {
   cloudinary.config(getCloudinaryOptions(config))
   return await new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: productFolder(productId),
+        folder: kind === 'pages' ? `la-circular/pages/${productId}` : productFolder(productId),
         public_id: randomUUID(),
         resource_type: 'image',
         allowed_formats: ['jpg', 'png', 'webp'],

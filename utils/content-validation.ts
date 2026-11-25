@@ -23,6 +23,12 @@ export function validateContentInput(input: unknown): SiteContent {
     if (normalized.length > contentLimits[key]) {
       throw new Error('Oversized content')
     }
+    if ((key === 'home_image' || key === 'project_image') && normalized) {
+      const url = new URL(normalized)
+      if (url.protocol !== 'https:' || url.hostname !== 'res.cloudinary.com' || !/^\/[^/]+\/image\/upload\//.test(url.pathname) || url.username || url.password) {
+        throw new Error('Expected a Cloudinary image URL')
+      }
+    }
     content[key] = normalized
   }
   return content
