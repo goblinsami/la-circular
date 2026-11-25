@@ -18,6 +18,9 @@ function updatePublicImage(productId: string, imatge: string | null) {
 
 const products = ref<AdminProduct[]>([])
 const search = ref('')
+const pickerOpen = ref(false)
+const activeIndex = ref(0)
+const pickerInput = ref<HTMLInputElement | null>(null)
 const filteredProducts = computed(() => getVisibleProducts(products.value, search.value))
 const selectedId = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -27,7 +30,7 @@ const error = ref('')
 const status = ref('')
 
 const selectedProduct = computed(() =>
-  filteredProducts.value.find((product) => product.id === selectedId.value),
+  products.value.find((product) => product.actiu && product.id === selectedId.value),
 )
 
 async function loadProducts() {
@@ -35,7 +38,7 @@ async function loadProducts() {
   error.value = ''
   try {
     products.value = await $fetch<AdminProduct[]>('/api/admin/products')
-    syncSelection()
+    selectedId.value = products.value.find(product => product.actiu)?.id ?? ''
   } catch {
     error.value = t('admin_no_hem_pogut_carregar_els_productes_torna')
   } finally {
@@ -99,13 +102,55 @@ async function removeImage() {
   }
 }
 
-function syncSelection() {
-  if (!filteredProducts.value.some(product => product.id === selectedId.value)) {
-    selectedId.value = filteredProducts.value[0]?.id ?? ''
-  }
+function productLabel(product: Product) {
+  return t('admin_product_option', { name: product.nom, category: product.categoria })
 }
 
-watch(filteredProducts, syncSelection, { flush: 'sync' })
+function openPicker() {
+  if (busy.value || pickerOpen.value) return
+  search.value = ''
+  activeIndex.value = 0
+  pickerOpen.value = true
+}
+
+function selectProduct(product: Product) {
+  selectedId.value = product.id
+  pickerOpen.value = false
+  search.value = ''
+}
+
+function searchProducts(event: Event) {
+  search.value = (event.target as HTMLInputElement).value
+  selectedId.value = ''
+  activeIndex.value = 0
+  pickerOpen.value = true
+}
+
+function closePicker(event: FocusEvent) {
+  if ((event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) return
+  pickerOpen.value = false
+}
+
+function pickerKeydown(event: KeyboardEvent) {
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault()
+    if (!pickerOpen.value) openPicker()
+    else {
+      const count = filteredProducts.value.length
+      activeIndex.value = count ? (activeIndex.value + (event.key === 'ArrowDown' ? 1 : -1) + count) % count : 0
+    }
+    nextTick(() => document.getElementById(`image-product-option-${activeIndex.value}`)?.scrollIntoView({ block: 'nearest' }))
+  } else if (event.key === 'Enter' && pickerOpen.value) {
+    event.preventDefault()
+    const product = filteredProducts.value[activeIndex.value]
+    if (product) selectProduct(product)
+  } else if (event.key === 'Escape') {
+    event.preventDefault()
+    pickerOpen.value = false
+  } else if (event.key === 'Tab') {
+    pickerOpen.value = false
+  }
+}
 
 watch(selectedId, () => {
   status.value = ''
@@ -128,24 +173,52 @@ onMounted(loadProducts)
       @click="loadProducts"
     >{{ t('products_torna_ho_a_provar') }}</button>
     <div v-if="!loading && products.length" class="image-editor-controls">
-      <div class="filter-field">
-        <label for="image-product-search">{{ t('products_cerca_per_nom') }}</label>
-        <input
-          id="image-product-search"
-          v-model="search"
-          type="search"
-          :disabled="busy"
-          autocomplete="off"
-        />
-      </div>
-      <p v-if="!filteredProducts.length" role="status">{{ t('products_no_hem_trobat_cap_producte') }}</p>
-      <div v-if="filteredProducts.length" class="filter-field">
+      <div class="filter-field product-picker" @focusout="closePicker">
         <label for="image-product">{{ t('admin_producte') }}</label>
-        <select id="image-product" v-model="selectedId" :disabled="busy">
-          <option v-for="product in filteredProducts" :key="product.id" :value="product.id">
-            {{ t('admin_product_option', { name: product.nom, category: product.categoria }) }}
-          </option>
-        </select>
+        <div class="product-picker-control">
+          <input
+            id="image-product"
+            ref="pickerInput"
+            :value="pickerOpen ? search : selectedProduct ? productLabel(selectedProduct) : search"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="image-product-options"
+            :aria-expanded="pickerOpen"
+            :aria-activedescendant="pickerOpen && filteredProducts.length ? `image-product-option-${activeIndex}` : undefined"
+            :placeholder="t('products_cerca_per_nom')"
+            :disabled="busy"
+            autocomplete="off"
+            @focus="openPicker"
+            @click="openPicker"
+            @input="searchProducts"
+            @keydown="pickerKeydown"
+          />
+          <button
+            class="product-picker-toggle"
+            type="button"
+            tabindex="-1"
+            :aria-label="t('admin_producte')"
+            :aria-expanded="pickerOpen"
+            aria-controls="image-product-options"
+            :disabled="busy"
+            @mousedown.prevent
+            @click="pickerOpen ? pickerOpen = false : (pickerInput?.focus(), openPicker())"
+          ><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></button>
+        </div>
+        <ul v-show="pickerOpen" id="image-product-options" class="product-picker-options" role="listbox" :aria-label="t('admin_producte')">
+          <li
+            v-for="(product, index) in filteredProducts"
+            :id="`image-product-option-${index}`"
+            :key="product.id"
+            role="option"
+            :aria-selected="product.id === selectedId"
+            :class="{ 'is-active': index === activeIndex }"
+            @mousedown.prevent
+            @mousemove="activeIndex = index"
+            @click="selectProduct(product)"
+          >{{ productLabel(product) }}</li>
+        </ul>
+        <p v-if="pickerOpen && !filteredProducts.length" role="status">{{ t('products_no_hem_trobat_cap_producte') }}</p>
       </div>
       <div v-if="selectedProduct?.imatge" class="admin-image-preview">
         <img
